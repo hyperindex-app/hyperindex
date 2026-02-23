@@ -1,70 +1,105 @@
-# HyperIndex - Self-Contained Dashboard
+# HyperIndex
 
-A real-time Hyperliquid smart money tracking dashboard.
+**Real-time smart money positioning dashboard for Hyperliquid.**
 
-## Quick Start
+HyperIndex tracks a curated cohort of elite wallets on Hyperliquid and aggregates their positioning into a single dashboard — showing net exposure, conviction scores, tilt, and leverage across all tracked assets.
 
-```bash
-# Generate data (one-shot)
-python generator.py
+---
 
-# Start local server
-python -m http.server 3000
+## What It Does
 
-# View at http://localhost:3000
-```
+- Tracks a cohort of high-performing Hyperliquid wallets
+- Aggregates long/short positioning across all perp assets
+- Calculates conviction, tilt (T_s), and net leverage metrics
+- Serves a live web dashboard with historical charting
+- Updates on a scheduled cadence via a lightweight Python generator
 
-## Folder Structure
+No API keys required — all data is sourced from the public Hyperliquid API.
+
+---
+
+## Stack
+
+- **Frontend:** Static HTML + vanilla JS + Chart.js + Tailwind CSS
+- **Data layer:** Python (`generator.py`) — queries Hyperliquid, writes JSON
+- **Scheduling:** `scheduler.py` — runs the generator on a set cadence
+- **Monitoring:** `monitor.py` — terminal dashboard for operational visibility
+
+---
+
+## Project Structure
 
 ```
 HyperIndex/
-├── index.html          # Dashboard (main entry point)
-├── generator.py        # Data generator script
+├── index.html              # Dashboard (main entry point)
+├── generator.py            # Data generator
+├── scheduler.py            # Scheduling daemon
+├── monitor.py              # Terminal monitor
 ├── config/
-│   └── wallets.txt     # Cohort wallet addresses (one per line)
-├── data/
-│   ├── index_latest.json   # Current snapshot
-│   ├── history.json        # Historical data (self-maintained)
-│   ├── .health             # Health status
-│   └── backups/            # Rolling backups
+│   └── wallets.txt         # Cohort wallet addresses (one per line)
+├── data/                   # Generated data (gitignored)
+│   ├── index_latest.json
+│   ├── history.json
+│   └── backups/
 ├── images/
 │   ├── logo-icon.jpg
 │   └── logo-wordmark.jpg
-└── logs/
-    └── generator.log
+└── logs/                   # Runtime logs (gitignored)
 ```
+
+---
+
+## Running Locally
+
+**Requirements:** Python 3.8+, `requests` library
+
+```bash
+# Install dependencies
+pip install requests
+
+# Generate data (fetches live from Hyperliquid)
+python3 generator.py
+
+# Serve the dashboard
+python3 -m http.server 3000
+# → Open http://localhost:3000
+```
+
+---
 
 ## Scheduling
 
-### Free Tier (Twice Daily)
+To keep data fresh, run the generator on a schedule:
+
 ```bash
-# Add to crontab (crontab -e)
-0 8,20 * * * cd /path/to/HyperIndex && python3 generator.py
+# Example: 4x daily via cron
+0 0,6,12,18 * * * cd /path/to/HyperIndex && python3 generator.py
+
+# Or use the built-in scheduler daemon
+python3 scheduler.py
 ```
 
-### Paid Tier (Every 5 Minutes)
-```bash
-*/5 * * * * cd /path/to/HyperIndex && python3 generator.py
-```
+---
 
 ## Updating the Cohort
 
 1. Edit `config/wallets.txt` (one address per line)
-2. Run `python generator.py` to regenerate
-3. History will continue from the new cohort
+2. Update `COHORT_REBALANCED_AT` in `generator.py`
+3. Run `python3 generator.py` to regenerate with the new cohort
+
+---
 
 ## Deployment
 
-This folder is fully self-contained. To deploy:
+The project is fully self-contained. To deploy:
 
-1. Copy entire `HyperIndex/` folder to server
-2. Set up cron for `generator.py`
-3. Serve files via nginx/Apache/etc.
-4. Point domain to `index.html`
+1. Copy the `HyperIndex/` folder to your server
+2. Set up a cron job or run `scheduler.py` as a daemon
+3. Serve static files via nginx, Caddy, or any static host
+4. Point your domain to `index.html`
 
-## Requirements
+---
 
-- Python 3.8+
-- `requests` library (usually pre-installed)
+## Disclaimer
 
-No API keys or secrets needed - uses public Hyperliquid data.
+Not financial advice. Data is aggregated from public on-chain activity and is provided for informational purposes only. Use at your own risk.

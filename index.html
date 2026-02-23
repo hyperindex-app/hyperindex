@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HyperIndex - Hyperliquid Smart Money Index</title>
+    <title>HyperIndex - The Hyperliquid Elite Trader Index</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.cdnfonts.com/css/general-sans" rel="stylesheet">
@@ -26,7 +26,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-medium font-general-sans bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Hyper<em class="italic">Index</em></h1>
-                    <p class="text-xs text-slate-400">Hyperliquid Smart Money Index</p>
+                    <p class="text-xs text-slate-400">The Hyperliquid Elite Trader Index</p>
                 </div>
             </div>
             <div class="flex items-center space-x-4">
@@ -48,7 +48,32 @@
         </div>
     </header>
 
-    <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+    <!-- Hero Section -->
+    <section class="border-b border-slate-800/60 bg-gradient-to-b from-slate-950 to-slate-900/50">
+        <div class="max-w-7xl mx-auto px-6 py-16 md:py-20 text-center">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-6 tracking-wide uppercase">
+                <div class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></div>
+                <span>The Hyperliquid Elite Trader Index</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                Track Elite Trader Positioning<br class="hidden md:block">
+                <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Before The Market Moves</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                HyperIndex tracks 100 curated Elite Traders on Hyperliquid and distills their positioning into the <span class="text-white font-semibold">HEAT Score</span>, asset tilts, and conviction metrics.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-semibold hover:from-blue-500 hover:to-purple-500 transition-all shadow-lg shadow-blue-500/30">
+                    View Dashboard
+                </button>
+                <button onclick="showPricing()" class="px-8 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg font-semibold border border-slate-700 transition-all">
+                    See Plans
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <div id="dashboard" class="max-w-7xl mx-auto px-6 py-8 space-y-8">
 
         <!-- Hero Stats -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -58,8 +83,8 @@
                 <div class="relative">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <div class="text-slate-400 text-sm mb-1">HyperIndex Score</div>
-                            <div class="text-xs text-slate-500">Aggregate positioning of <span id="walletCount">--</span> wallets</div>
+                            <div class="text-slate-400 text-sm mb-1">HEAT Score</div>
+                            <div class="text-xs text-slate-500">Aggregate positioning of <span id="walletCount">--</span> Elite Traders</div>
                         </div>
                         <svg id="trendIcon" class="w-8 h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                     </div>
@@ -76,12 +101,12 @@
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center space-x-3">
                         <svg class="w-6 h-6 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        <div class="text-slate-400 text-sm">Smart Traders</div>
+                        <div class="text-slate-400 text-sm">Elite Traders</div>
                     </div>
                     <span id="rebalanceBadge" class="hidden px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">Rebalanced</span>
                 </div>
                 <div class="text-4xl font-bold mb-1" id="activeWallets">--</div>
-                <div class="text-sm text-slate-400">Elite wallets tracked</div>
+                <div class="text-sm text-slate-400">Elite Traders tracked</div>
                 <div class="mt-3 text-xs text-slate-500" id="totalEquity">$-- total equity</div>
                 <div class="mt-1 text-xs text-slate-600" id="rebalanceDate"></div>
             </div>
@@ -114,8 +139,8 @@
         <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700">
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <h2 class="text-xl font-bold mb-1">Cohort Positioning</h2>
-                    <p class="text-sm text-slate-400">Historical smart money exposure</p>
+                    <h2 class="text-xl font-bold mb-1">Elite Trader Positioning</h2>
+                    <p class="text-sm text-slate-400">Historical Elite Trader exposure</p>
                 </div>
                 <div class="flex space-x-1 bg-slate-800 rounded-lg p-1">
                     <button onclick="setChart('net')" id="btn-net" class="px-3 py-1.5 rounded text-xs font-semibold bg-blue-600 text-white">Net Position</button>
@@ -146,7 +171,7 @@
                             <th class="pb-3 font-semibold">Tilt</th>
                             <th class="pb-3 font-semibold">Net Leverage</th>
                             <th class="pb-3 font-semibold">Conviction</th>
-                            <th class="pb-3 font-semibold">Traders</th>
+                            <th class="pb-3 font-semibold">Elite Traders</th>
                         </tr>
                     </thead>
                     <tbody id="assetTableBody">
@@ -159,7 +184,7 @@
 
         <!-- Signals -->
         <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700">
-            <h2 class="text-xl font-bold mb-6">Smart Money Signals</h2>
+            <h2 class="text-xl font-bold mb-6">Elite Trader Signals</h2>
             <div class="space-y-3" id="signalsContainer">
                 <div class="text-slate-500 text-center py-4">Loading signals...</div>
             </div>
@@ -172,7 +197,7 @@
             <div class="flex justify-between items-center mb-8">
                 <div>
                     <h2 class="text-3xl font-bold mb-2">Unlock HyperIndex</h2>
-                    <p class="text-slate-400">Get real-time smart money insights</p>
+                    <p class="text-slate-400">Get real-time Elite Trader insights</p>
                 </div>
                 <button onclick="hidePricing()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
             </div>
@@ -200,7 +225,7 @@
     <!-- Footer -->
     <footer class="border-t border-slate-800 mt-12 py-8 text-center text-slate-500 text-sm">
         <p class="font-semibold text-slate-300 mb-1">HyperIndex</p>
-        <p>Real-time tracking of elite wallets · hyperindex.io</p>
+        <p>Real-time tracking of Elite Traders on Hyperliquid · hyperindex.io</p>
         <p class="mt-2 text-xs">Not financial advice · Use at your own risk</p>
     </footer>
 
@@ -310,7 +335,7 @@
                 const netValues = hourly.map(d => parseFloat((d.cohort_net_usd / 1e6).toFixed(1)));
                 datasets = [
                     {
-                        label: 'Cohort Net ($M)',
+                        label: 'Net Position ($M)',
                         data: netValues,
                         borderColor: '#10b981',
                         fill: { target: { value: 0 }, above: 'rgba(16, 185, 129, 0.1)', below: 'transparent' },
@@ -374,7 +399,7 @@
                 }];
             } else if (currentChartType === 'leverage') {
                 datasets = [{
-                    label: 'Cohort Leverage',
+                    label: 'Total Leverage',
                     data: hourly.map(d => d.L_cohort_total?.toFixed(1) || 0),
                     borderColor: '#3b82f6',
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -476,7 +501,7 @@
                                 <span class="text-slate-600">·</span>
                                 <span class="font-mono">Tilt: ${(s.tilt * 100).toFixed(0)}%</span>
                                 <span class="text-slate-600">·</span>
-                                <span>${s.position_count} traders</span>
+                                <span>${s.position_count} Elite Traders</span>
                             </div>
                             <div class="text-xs text-slate-500 mt-2">Net ${s.net_usd > 0 ? '+' : ''}${fmt(s.net_usd)} position</div>
                         </div>
@@ -489,7 +514,7 @@
                 <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 flex items-start space-x-3 relative">
                     <svg class="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                     <div class="flex-1 blur-sm">
-                        <div class="font-semibold text-yellow-400">Conviction Spike Detected</div>
+                        <div class="font-semibold text-yellow-400">HEAT Spike Detected</div>
                         <div class="text-sm text-slate-300 mt-1">High conviction signal detected...</div>
                     </div>
                     <div class="absolute inset-0 flex items-center justify-center">
@@ -541,7 +566,7 @@
             // Stats
             document.getElementById('walletCount').textContent = stats.total_wallets;
             document.getElementById('activeWallets').textContent = stats.active_wallets;
-            document.getElementById('leverageText').textContent = `Total Cohort Leverage: ${stats.L_cohort_total.toFixed(2)}x`;
+            document.getElementById('leverageText').textContent = `Total Leverage: ${stats.L_cohort_total.toFixed(2)}x`;
             document.getElementById('totalEquity').textContent = `${fmt(stats.total_equity)} total equity`;
             document.getElementById('grossNotional').textContent = fmt(stats.gross_notional_usd);
             document.getElementById('netExposure').textContent = `Net: ${fmt(stats.net_usd)} ${stats.net_usd > 0 ? 'long' : 'short'}`;

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperIndex - Hyperliquid Smart Money Index</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.cdnfonts.com/css/general-sans" rel="stylesheet">
+    <style>
+        body { margin: 0; font-family: 'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .font-general-sans { font-family: 'General Sans', sans-serif; }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="relative">
+                    <img src="images/logo-icon.jpg" alt="HyperIndex" class="w-12 h-12 rounded-xl shadow-lg">
+                    <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-medium font-general-sans bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Hyper<em class="italic">Index</em></h1>
+                    <p class="text-xs text-slate-400">Hyperliquid Smart Money Index</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden md:block">
+                    <div class="text-xs text-slate-500" id="lastUpdated">Loading...</div>
+                    <div id="liveStatus" class="text-sm font-mono text-green-400 flex items-center space-x-1">
+                        <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <span>Live</span>
+                    </div>
+                    <div id="staleWarning" class="hidden text-sm font-mono text-yellow-400 flex items-center space-x-1">
+                        <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                        <span id="staleText">Data is stale</span>
+                    </div>
+                </div>
+                <button onclick="showPricing()" class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-semibold hover:from-blue-500 hover:to-purple-500 transition-all shadow-lg shadow-blue-500/30">
+                    Subscribe Now
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+
+        <!-- Hero Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Index Score -->
+            <div class="col-span-1 md:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 border border-slate-700 shadow-2xl relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5"></div>
+                <div class="relative">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <div class="text-slate-400 text-sm mb-1">HyperIndex Score</div>
+                            <div class="text-xs text-slate-500">Aggregate positioning of <span id="walletCount">--</span> wallets</div>
+                        </div>
+                        <svg id="trendIcon" class="w-8 h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                    </div>
+                    <div class="text-6xl font-bold mb-3" id="indexScore">--</div>
+                    <div class="flex items-center space-x-3">
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold" id="directionBadge">--</span>
+                        <span class="text-slate-400 text-sm" id="leverageText">L_cohort_total: --</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Traders -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <svg class="w-6 h-6 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <div class="text-slate-400 text-sm">Smart Traders</div>
+                    </div>
+                    <span id="rebalanceBadge" class="hidden px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">Rebalanced</span>
+                </div>
+                <div class="text-4xl font-bold mb-1" id="activeWallets">--</div>
+                <div class="text-sm text-slate-400">Elite wallets tracked</div>
+                <div class="mt-3 text-xs text-slate-500" id="totalEquity">$-- total equity</div>
+                <div class="mt-1 text-xs text-slate-600" id="rebalanceDate"></div>
+            </div>
+
+            <!-- Total Exposure -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700">
+                <div class="flex items-center space-x-3 mb-4">
+                    <svg class="w-6 h-6 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    <div class="text-slate-400 text-sm">Total Exposure</div>
+                </div>
+                <div class="text-4xl font-bold mb-1" id="grossNotional">$--</div>
+                <div class="text-sm text-slate-400">Combined notional</div>
+                <div class="mt-3 text-xs text-slate-500" id="netExposure">Net: $-- long</div>
+            </div>
+        </div>
+
+        <!-- Free Preview Banner -->
+        <div class="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/30 rounded-xl p-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <svg class="w-5 h-5 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <div>
+                    <div class="font-semibold">Free Preview Mode</div>
+                    <div class="text-sm text-slate-300">Showing top 5 assets. Subscribe to unlock all <span id="assetCountBanner">--</span> tracked assets.</div>
+                </div>
+            </div>
+            <button onclick="showPricing()" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold whitespace-nowrap">Unlock All</button>
+        </div>
+
+        <!-- Charts -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-bold mb-1">Cohort Positioning</h2>
+                    <p class="text-sm text-slate-400">Historical smart money exposure</p>
+                </div>
+                <div class="flex space-x-1 bg-slate-800 rounded-lg p-1">
+                    <button onclick="setChart('net')" id="btn-net" class="px-3 py-1.5 rounded text-xs font-semibold bg-blue-600 text-white">Net Position</button>
+                    <button onclick="setChart('exposure')" id="btn-exposure" class="px-3 py-1.5 rounded text-xs font-semibold text-slate-400 hover:text-white">Total Exposure</button>
+                    <button onclick="setChart('longshort')" id="btn-longshort" class="px-3 py-1.5 rounded text-xs font-semibold text-slate-400 hover:text-white">Long/Short</button>
+                    <button onclick="setChart('assets')" id="btn-assets" class="px-3 py-1.5 rounded text-xs font-semibold text-slate-400 hover:text-white">By Asset</button>
+                    <button onclick="setChart('equity')" id="btn-equity" class="px-3 py-1.5 rounded text-xs font-semibold text-slate-400 hover:text-white">Total Equity</button>
+                    <button onclick="setChart('leverage')" id="btn-leverage" class="px-3 py-1.5 rounded text-xs font-semibold text-slate-400 hover:text-white">Leverage</button>
+                </div>
+            </div>
+            <div style="height: 350px;">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Asset Table -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold">Smart Money Positioning by Asset</h2>
+                <div class="text-sm text-slate-400"><span id="assetCount">--</span> assets tracked</div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-left text-sm text-slate-400 border-b border-slate-700">
+                            <th class="pb-3 font-semibold">Asset</th>
+                            <th class="pb-3 font-semibold">Net Position</th>
+                            <th class="pb-3 font-semibold">Tilt</th>
+                            <th class="pb-3 font-semibold">Net Leverage</th>
+                            <th class="pb-3 font-semibold">Conviction</th>
+                            <th class="pb-3 font-semibold">Traders</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assetTableBody">
+                        <tr><td colspan="6" class="py-8 text-center text-slate-500">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 text-center" id="unlockButton"></div>
+        </div>
+
+        <!-- Signals -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700">
+            <h2 class="text-xl font-bold mb-6">Smart Money Signals</h2>
+            <div class="space-y-3" id="signalsContainer">
+                <div class="text-slate-500 text-center py-4">Loading signals...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Modal -->
+    <div id="pricingModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 border border-slate-700 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">Unlock HyperIndex</h2>
+                    <p class="text-slate-400">Get real-time smart money insights</p>
+                </div>
+                <button onclick="hidePricing()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+                    <div class="text-center mb-6"><h3 class="text-xl font-bold mb-2">Starter</h3><div class="text-4xl font-bold mb-1">$49</div><div class="text-slate-400 text-sm">per month</div></div>
+                    <ul class="space-y-3 mb-6"><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Top 15 assets</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Updates twice daily</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Email alerts</span></li></ul>
+                    <button class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold">Start Free Trial</button>
+                </div>
+                <div class="bg-gradient-to-br from-blue-900/50 to-purple-900/50 rounded-xl p-6 border-2 border-blue-500 relative">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-1 rounded-full text-xs font-bold">MOST POPULAR</div>
+                    <div class="text-center mb-6"><h3 class="text-xl font-bold mb-2">Pro</h3><div class="text-4xl font-bold mb-1">$149</div><div class="text-slate-400 text-sm">per month</div></div>
+                    <ul class="space-y-3 mb-6"><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">All 100+ assets</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Real-time (15min)</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Telegram + Discord</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">API access</span></li></ul>
+                    <button class="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-semibold">Start Free Trial</button>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+                    <div class="text-center mb-6"><h3 class="text-xl font-bold mb-2">Elite</h3><div class="text-4xl font-bold mb-1">$399</div><div class="text-slate-400 text-sm">per month</div></div>
+                    <ul class="space-y-3 mb-6"><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Instant updates</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Wallet tracking</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Custom webhooks</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Priority support</span></li></ul>
+                    <button class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold">Contact Sales</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 mt-12 py-8 text-center text-slate-500 text-sm">
+        <p class="font-semibold text-slate-300 mb-1">HyperIndex</p>
+        <p>Real-time tracking of elite wallets · hyperindex.io</p>
+        <p class="mt-2 text-xs">Not financial advice · Use at your own risk</p>
+    </footer>
+
+    <script>
+        // State
+        let indexData = null;
+        let historyData = null;
+        let mainChart = null;
+        let currentChartType = 'net';
+
+        // Schedule hours for free tier (4x daily)
+        const SCHEDULE_HOURS = [0, 6, 12, 18];
+
+        // Filter data to 4x daily schedule times (for free tier)
+        // Pro tier would skip this filter and show all data points
+        function filterTo4xDaily(hourlyData) {
+            if (!hourlyData || hourlyData.length === 0) return hourlyData;
+            const lastPoint = hourlyData[hourlyData.length - 1];
+            const filtered = hourlyData.filter(d => {
+                const dt = new Date(d.timestamp);
+                const hour = dt.getHours();
+                // Exact match only: 0 (12am), 6 (6am), 12 (12pm), 18 (6pm)
+                return SCHEDULE_HOURS.includes(hour);
+            });
+            // Always include the most recent point so off-schedule runs show up
+            const lastFiltered = filtered[filtered.length - 1];
+            if (!lastFiltered || lastFiltered.timestamp !== lastPoint.timestamp) {
+                filtered.push(lastPoint);
+            }
+            return filtered;
+        }
+
+        // Helpers
+        const fmt = (n) => {
+            const a = Math.abs(n);
+            if (a >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
+            if (a >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+            if (a >= 1e3) return `$${(n/1e3).toFixed(1)}K`;
+            return `$${n.toFixed(0)}`;
+        };
+
+        const tiltColor = (t) => {
+            if (t > 0.5) return 'bg-green-500/20 text-green-400 border border-green-500/30';
+            if (t > 0.2) return 'bg-green-500/10 text-green-300 border border-green-500/20';
+            if (t > -0.2) return 'bg-yellow-500/10 text-yellow-300 border border-yellow-500/20';
+            if (t > -0.5) return 'bg-red-500/10 text-red-300 border border-red-500/20';
+            return 'bg-red-500/20 text-red-400 border border-red-500/30';
+        };
+
+        // Modal
+        function showPricing() { document.getElementById('pricingModal').classList.remove('hidden'); }
+        function hidePricing() { document.getElementById('pricingModal').classList.add('hidden'); }
+        document.getElementById('pricingModal').addEventListener('click', (e) => { if (e.target.id === 'pricingModal') hidePricing(); });
+
+        // Chart switching
+        function setChart(type) {
+            currentChartType = type;
+            ['net', 'exposure', 'longshort', 'assets', 'equity', 'leverage'].forEach(t => {
+                const btn = document.getElementById(`btn-${t}`);
+                if (t === type) {
+                    btn.classList.add('bg-blue-600', 'text-white');
+                    btn.classList.remove('text-slate-400');
+                } else {
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                    btn.classList.add('text-slate-400');
+                }
+            });
+            renderChart();
+        }
+
+        // Render chart
+        function renderChart() {
+            if (!historyData || !historyData.hourly) return;
+
+            // Filter to 4x daily schedule for free tier (Pro would show all)
+            const hourly = filterTo4xDaily(historyData.hourly).slice(-120); // 30 days at 4x daily
+            const labels = hourly.map(d => {
+                const dt = new Date(d.timestamp);
+                return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+
+            // Data is already filtered to 4x daily, no additional sampling needed
+            const sampledLabels = labels;
+
+            let datasets = [];
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { intersect: false, mode: 'index' },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8' } },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        borderColor: '#334155',
+                        borderWidth: 1,
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#cbd5e1'
+                    }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', maxTicksLimit: 10 }, grid: { color: '#1e293b' } },
+                    y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }
+                }
+            };
+
+            if (currentChartType === 'net') {
+                datasets = [{
+                    label: 'Cohort Net ($M)',
+                    data: hourly.map(d => (d.cohort_net_usd / 1e6).toFixed(1)),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }];
+            } else if (currentChartType === 'exposure') {
+                datasets = [{
+                    label: 'Total Exposure ($M)',
+                    data: hourly.map(d => ((d.gross_long_usd + d.gross_short_usd) / 1e6).toFixed(1)),
+                    borderColor: '#eab308',
+                    backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }];
+            } else if (currentChartType === 'longshort') {
+                datasets = [
+                    {
+                        label: 'Gross Long ($M)',
+                        data: hourly.map(d => (d.gross_long_usd / 1e6).toFixed(1)),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Gross Short ($M)',
+                        data: hourly.map(d => -(d.gross_short_usd / 1e6).toFixed(1)),
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }
+                ];
+            } else if (currentChartType === 'assets') {
+                datasets = [
+                    { label: 'BTC Net ($M)', data: hourly.map(d => (d.btc_net_usd / 1e6).toFixed(1)), borderColor: '#f7931a', tension: 0.3 },
+                    { label: 'ETH Net ($M)', data: hourly.map(d => (d.eth_net_usd / 1e6).toFixed(1)), borderColor: '#627eea', tension: 0.3 },
+                    { label: 'SOL Net ($M)', data: hourly.map(d => (d.sol_net_usd / 1e6).toFixed(1)), borderColor: '#14f195', tension: 0.3 },
+                    { label: 'HYPE Net ($M)', data: hourly.map(d => (d.hype_net_usd / 1e6).toFixed(1)), borderColor: '#a855f7', tension: 0.3 }
+                ];
+            } else if (currentChartType === 'equity') {
+                datasets = [{
+                    label: 'Total Equity ($M)',
+                    data: hourly.map(d => (d.cohort_total_equity / 1e6).toFixed(1)),
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }];
+            } else if (currentChartType === 'leverage') {
+                datasets = [{
+                    label: 'Cohort Leverage',
+                    data: hourly.map(d => d.L_cohort_total?.toFixed(1) || 0),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }];
+                chartOptions.scales.y.ticks.callback = (v) => parseFloat(v).toFixed(1) + 'x';
+            }
+
+            if (mainChart) mainChart.destroy();
+
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            mainChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: sampledLabels, datasets },
+                options: chartOptions
+            });
+        }
+
+        // Render asset table
+        function renderAssetTable() {
+            if (!indexData || !indexData.assets) return;
+
+            const tbody = document.getElementById('assetTableBody');
+            const assets = indexData.assets;
+
+            tbody.innerHTML = assets.map((a, i) => {
+                const isLocked = !a.free;
+                const rowClass = isLocked ? 'opacity-40 blur-[1px]' : 'hover:bg-slate-800/50';
+                const netColor = a.net_usd > 0 ? 'text-green-400' : 'text-red-400';
+                const lnetColor = a.L_net_equity > 0 ? 'text-green-400' : 'text-red-400';
+                const convWidth = Math.min(Math.abs(a.conv_equity) * 100, 100);
+                const convColor = Math.abs(a.conv_equity) > 0.7 ? 'bg-green-400' : Math.abs(a.conv_equity) > 0.4 ? 'bg-yellow-400' : 'bg-red-400';
+
+                return `
+                    <tr class="border-b border-slate-800 ${rowClass}">
+                        <td class="py-4">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-xs font-bold">${a.asset.substring(0,2)}</div>
+                                <span class="font-semibold">${a.asset}</span>
+                                ${isLocked ? '<svg class="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' : ''}
+                            </div>
+                        </td>
+                        <td class="py-4"><div class="${netColor} font-semibold">${a.net_usd > 0 ? '+' : ''}${fmt(a.net_usd)}</div></td>
+                        <td class="py-4"><span class="px-3 py-1 rounded-lg text-xs font-semibold ${tiltColor(a.tilt)}">${a.tilt > 0 ? '+' : ''}${(a.tilt * 100).toFixed(0)}%</span></td>
+                        <td class="py-4"><span class="font-mono text-sm ${lnetColor}">${a.L_net_equity > 0 ? '+' : ''}${a.L_net_equity.toFixed(4)}</span></td>
+                        <td class="py-4">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-20 bg-slate-700 rounded-full h-2"><div class="h-2 rounded-full ${convColor}" style="width:${convWidth}%"></div></div>
+                                <span class="text-xs text-slate-400 font-mono">${Math.abs(a.conv_equity).toFixed(2)}</span>
+                            </div>
+                        </td>
+                        <td class="py-4 text-center"><span class="px-2 py-1 bg-slate-700 rounded text-xs font-mono">${a.position_count}</span></td>
+                    </tr>
+                `;
+            }).join('');
+
+            const lockedCount = assets.filter(a => !a.free).length;
+            if (lockedCount > 0) {
+                document.getElementById('unlockButton').innerHTML = `
+                    <button onclick="showPricing()" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold transition-all inline-flex items-center space-x-2">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span>Unlock ${lockedCount} More Assets</span>
+                    </button>
+                `;
+            }
+        }
+
+        // Render signals
+        function renderSignals() {
+            if (!indexData || !indexData.assets) return;
+
+            const signals = indexData.assets.slice(0, 5)
+                .filter(a => Math.abs(a.tilt) > 0.4 || Math.abs(a.L_net_equity) > 0.1)
+                .slice(0, 3)
+                .map(a => ({
+                    ...a,
+                    type: a.net_usd > 0 ? 'long' : 'short',
+                    severity: Math.abs(a.L_net_equity) > 0.15 ? 'high' : Math.abs(a.tilt) > 0.7 ? 'medium' : 'low'
+                }));
+
+            const container = document.getElementById('signalsContainer');
+            let html = signals.map(s => {
+                const isLong = s.type === 'long';
+                const bgClass = isLong ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30';
+                const textClass = isLong ? 'text-green-400' : 'text-red-400';
+                const icon = isLong
+                    ? '<svg class="w-5 h-5 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>'
+                    : '<svg class="w-5 h-5 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>';
+
+                return `
+                    <div class="${bgClass} border rounded-lg p-4 flex items-start space-x-3">
+                        <span class="${textClass}">${icon}</span>
+                        <div class="flex-1">
+                            <div class="font-semibold ${textClass}">${s.asset} ${s.severity === 'high' ? 'Extreme' : 'Strong'} ${isLong ? 'Long' : 'Short'} Signal</div>
+                            <div class="text-sm text-slate-300 mt-1 flex items-center flex-wrap gap-x-4">
+                                <span class="font-mono">Net Leverage: ${s.L_net_equity > 0 ? '+' : ''}${s.L_net_equity.toFixed(3)}</span>
+                                <span class="text-slate-600">·</span>
+                                <span class="font-mono">Tilt: ${(s.tilt * 100).toFixed(0)}%</span>
+                                <span class="text-slate-600">·</span>
+                                <span>${s.position_count} traders</span>
+                            </div>
+                            <div class="text-xs text-slate-500 mt-2">Net ${s.net_usd > 0 ? '+' : ''}${fmt(s.net_usd)} position</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add locked signal
+            html += `
+                <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 flex items-start space-x-3 relative">
+                    <svg class="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    <div class="flex-1 blur-sm">
+                        <div class="font-semibold text-yellow-400">Conviction Spike Detected</div>
+                        <div class="text-sm text-slate-300 mt-1">High conviction signal detected...</div>
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="bg-slate-900/90 px-4 py-2 rounded-lg border border-slate-700 flex items-center space-x-2">
+                            <svg class="w-4 h-4 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <span class="text-sm font-semibold">Pro Tier</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Update dashboard with index data
+        function updateDashboard() {
+            if (!indexData) return;
+
+            const score = indexData.index_score;
+            const stats = indexData.cohort_stats;
+
+            // Index score
+            document.getElementById('indexScore').textContent = (score > 0 ? '+' : '') + score.toFixed(4);
+            document.getElementById('indexScore').className = `text-6xl font-bold mb-3 ${score > 0.05 ? 'text-green-400' : score < -0.05 ? 'text-red-400' : 'text-yellow-400'}`;
+
+            // Direction badge
+            const badge = document.getElementById('directionBadge');
+            if (score > 0.05) {
+                badge.textContent = 'Net Long';
+                badge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-green-500/20 text-green-400';
+            } else if (score < -0.05) {
+                badge.textContent = 'Net Short';
+                badge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-red-500/20 text-red-400';
+            } else {
+                badge.textContent = 'Neutral';
+                badge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-yellow-500/20 text-yellow-400';
+            }
+
+            // Trend icon
+            const trendIcon = document.getElementById('trendIcon');
+            if (score > 0) {
+                trendIcon.innerHTML = '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>';
+                trendIcon.className = 'w-8 h-8 text-green-400';
+            } else {
+                trendIcon.innerHTML = '<polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>';
+                trendIcon.className = 'w-8 h-8 text-red-400';
+            }
+
+            // Stats
+            document.getElementById('walletCount').textContent = stats.total_wallets;
+            document.getElementById('activeWallets').textContent = stats.active_wallets;
+            document.getElementById('leverageText').textContent = `Total Cohort Leverage: ${stats.L_cohort_total.toFixed(2)}x`;
+            document.getElementById('totalEquity').textContent = `${fmt(stats.total_equity)} total equity`;
+            document.getElementById('grossNotional').textContent = fmt(stats.gross_notional_usd);
+            document.getElementById('netExposure').textContent = `Net: ${fmt(stats.net_usd)} ${stats.net_usd > 0 ? 'long' : 'short'}`;
+
+            // Asset counts
+            document.getElementById('assetCount').textContent = indexData.assets.length;
+            document.getElementById('assetCountBanner').textContent = indexData.assets.length;
+
+            // Cohort rebalance info
+            if (indexData.cohort_rebalanced_at) {
+                // Parse date as local (append T12:00 to avoid UTC midnight timezone shift)
+                const rebalDate = new Date(indexData.cohort_rebalanced_at + 'T12:00:00');
+                const rebalBadge = document.getElementById('rebalanceBadge');
+                const rebalDateEl = document.getElementById('rebalanceDate');
+                // Show badge if rebalanced within last 30 days
+                const daysSinceRebal = (Date.now() - rebalDate) / (1000 * 60 * 60 * 24);
+                if (daysSinceRebal <= 30) {
+                    rebalBadge.classList.remove('hidden');
+                }
+                rebalDateEl.textContent = `Cohort rebalanced ${rebalDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+            }
+
+            // Last updated + freshness check
+            const generatedAt = new Date(indexData.generated_at);
+            const ageMinutes = (Date.now() - generatedAt) / 60000;
+            document.getElementById('lastUpdated').textContent = `Updated ${generatedAt.toLocaleTimeString()}`;
+
+            // Show stale warning if data is older than 20 minutes
+            const liveStatus = document.getElementById('liveStatus');
+            const staleWarning = document.getElementById('staleWarning');
+            const staleText = document.getElementById('staleText');
+
+            if (ageMinutes > 20) {
+                liveStatus.classList.add('hidden');
+                staleWarning.classList.remove('hidden');
+                if (ageMinutes > 60) {
+                    staleText.textContent = `${Math.round(ageMinutes / 60)}h old`;
+                } else {
+                    staleText.textContent = `${Math.round(ageMinutes)}m old`;
+                }
+            } else {
+                liveStatus.classList.remove('hidden');
+                staleWarning.classList.add('hidden');
+            }
+
+            // Render components
+            renderAssetTable();
+            renderSignals();
+        }
+
+        // Fetch data
+        async function fetchData() {
+            try {
+                const cacheBuster = `?t=${Date.now()}`;
+                const [indexRes, historyRes] = await Promise.all([
+                    fetch('/data/index_latest.json' + cacheBuster),
+                    fetch('/data/history.json' + cacheBuster)
+                ]);
+
+                if (indexRes.ok) {
+                    indexData = await indexRes.json();
+                    updateDashboard();
+                }
+
+                if (historyRes.ok) {
+                    historyData = await historyRes.json();
+                    renderChart();
+                }
+            } catch (err) {
+                console.error('Error fetching data:', err);
+            }
+        }
+
+        // Init
+        fetchData();
+        setInterval(fetchData, 60000); // Refresh every minute
+    </script>
+</body>
+</html>

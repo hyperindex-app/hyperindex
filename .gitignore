@@ -1,0 +1,31 @@
+# Generated data - regenerated on each run, not committed
+data/index_latest.json
+data/history.json
+data/.health
+data/backups/
+
+# Logs
+logs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+venv/
+
+# Environment / secrets (never commit these)
+.env
+*.env
+*.key
+*.pem
+*secret*
+*credential*
+
+# macOS
+.DS_Store
+
+# Claude Code
+.claude/

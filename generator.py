@@ -22,6 +22,7 @@ import time
 import shutil
 import argparse
 import logging
+import subprocess
 import requests
 from collections import defaultdict
 from datetime import datetime
@@ -524,6 +525,48 @@ def write_health_status(success, wallets_total, wallets_failed, index_score):
         logger.warning(f"Failed to write health file: {e}")
 
 # ============================================================================
+# GIT PUSH (for static hosting via GitHub)
+# ============================================================================
+
+def git_push_data():
+    """Commit updated data files and push to GitHub for static hosting."""
+    try:
+        # Stage only the data files
+        subprocess.run(
+            ["git", "add", "data/index_latest.json", "data/history.json"],
+            cwd=str(BASE_DIR), check=True, capture_output=True
+        )
+
+        # Check if there's anything to commit
+        result = subprocess.run(
+            ["git", "diff", "--cached", "--quiet"],
+            cwd=str(BASE_DIR), capture_output=True
+        )
+        if result.returncode == 0:
+            logger.info("Git: no data changes to commit")
+            return
+
+        # Commit with timestamp
+        ts = datetime.now().strftime("%Y-%m-%d %H:%M UTC")
+        subprocess.run(
+            ["git", "commit", "-m", f"data: update index {ts}"],
+            cwd=str(BASE_DIR), check=True, capture_output=True
+        )
+
+        # Push
+        subprocess.run(
+            ["git", "push"],
+            cwd=str(BASE_DIR), check=True, capture_output=True
+        )
+        logger.info("Git: data pushed to GitHub")
+
+    except subprocess.CalledProcessError as e:
+        logger.warning(f"Git push failed (non-fatal): {e}")
+    except Exception as e:
+        logger.warning(f"Git push error (non-fatal): {e}")
+
+
+# ============================================================================
 # MAIN GENERATION
 # ============================================================================
 
@@ -579,6 +622,9 @@ def generate():
     logger.info(f"Assets tracked: {len(data['assets'])}")
     logger.info(f"Cohort equity: ${data['cohort_stats']['total_equity']:,.0f}")
     logger.info("Generation complete!")
+
+    # Push updated data to GitHub (serves static hosting)
+    git_push_data()
 
     return data
 

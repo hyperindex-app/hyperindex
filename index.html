@@ -307,40 +307,27 @@
             };
 
             if (currentChartType === 'net') {
-                datasets = [{
-                    label: 'Cohort Net ($M)',
-                    data: hourly.map(d => (d.cohort_net_usd / 1e6).toFixed(1)),
-                    borderColor: (ctx) => {
-                        const chart = ctx.chart;
-                        const {ctx: c, chartArea} = chart;
-                        if (!chartArea) return '#10b981';
-                        const gradient = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                        const zeroFrac = Math.min(Math.max(chartArea.top / (chartArea.top + chartArea.bottom), 0), 1);
-                        gradient.addColorStop(0, '#10b981');
-                        gradient.addColorStop(1, '#ef4444');
-                        return gradient;
+                const netValues = hourly.map(d => parseFloat((d.cohort_net_usd / 1e6).toFixed(1)));
+                datasets = [
+                    {
+                        label: 'Cohort Net ($M)',
+                        data: netValues,
+                        borderColor: '#10b981',
+                        fill: { target: { value: 0 }, above: 'rgba(16, 185, 129, 0.1)', below: 'transparent' },
+                        segment: { borderColor: ctx => ctx.p1.parsed.y < 0 ? '#ef4444' : '#10b981' },
+                        tension: 0.3,
+                        pointRadius: 0,
                     },
-                    borderColor: '#10b981',
-                    segment: {
-                        borderColor: (ctx) => ctx.p1.parsed.y < 0 ? '#ef4444' : '#10b981',
-                    },
-                    backgroundColor: (ctx) => {
-                        const chart = ctx.chart;
-                        const {ctx: c, chartArea, scales} = chart;
-                        if (!chartArea) return 'rgba(16, 185, 129, 0.1)';
-                        const yScale = scales.y;
-                        const zeroY = yScale.getPixelForValue(0);
-                        const gradientFill = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                        const zeroFrac = Math.min(Math.max((zeroY - chartArea.top) / (chartArea.bottom - chartArea.top), 0), 1);
-                        gradientFill.addColorStop(0, 'rgba(16, 185, 129, 0.15)');
-                        gradientFill.addColorStop(zeroFrac, 'rgba(16, 185, 129, 0.02)');
-                        gradientFill.addColorStop(zeroFrac, 'rgba(239, 68, 68, 0.02)');
-                        gradientFill.addColorStop(1, 'rgba(239, 68, 68, 0.15)');
-                        return gradientFill;
-                    },
-                    fill: true,
-                    tension: 0.3
-                }];
+                    {
+                        label: '_neg',
+                        data: netValues,
+                        borderColor: 'transparent',
+                        fill: { target: { value: 0 }, above: 'transparent', below: 'rgba(239, 68, 68, 0.1)' },
+                        tension: 0.3,
+                        pointRadius: 0,
+                        tooltip: { enabled: false },
+                    }
+                ];
             } else if (currentChartType === 'exposure') {
                 datasets = [{
                     label: 'Total Exposure ($M)',

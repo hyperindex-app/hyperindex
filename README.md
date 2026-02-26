@@ -36,7 +36,7 @@ HyperIndex/
 ├── scheduler.py            # Scheduling daemon
 ├── monitor.py              # Terminal monitor
 ├── config/
-│   └── wallets.txt         # Cohort wallet addresses (one per line)
+│   └── wallets.txt         # Cohort wallet addresses (gitignored, not in repo)
 ├── data/                   # Generated data (gitignored)
 │   ├── index_latest.json
 │   ├── history.json
@@ -83,9 +83,11 @@ python3 scheduler.py
 
 ## Updating the Cohort
 
-1. Edit `config/wallets.txt` (one address per line)
+1. Place wallet addresses in `config/wallets.txt` (one per line, gitignored)
 2. Update `COHORT_REBALANCED_AT` in `generator.py`
 3. Run `python3 generator.py` to regenerate with the new cohort
+
+> **Note:** `config/wallets.txt` is intentionally excluded from the repo. Create it manually on each machine.
 
 ---
 

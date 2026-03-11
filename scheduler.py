@@ -9,7 +9,9 @@ Usage:
     python3 scheduler.py
 """
 
+import os
 import subprocess
+import sys
 import time
 import logging
 from datetime import datetime
@@ -18,6 +20,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 LOG_FILE = BASE_DIR / "logs" / "scheduler.log"
 GENERATOR_SCRIPT = BASE_DIR / "generator.py"
+LOCK_FILE = BASE_DIR / "scheduler.lock"
 
 SCHEDULE_HOURS = [0, 6, 12, 18]  # 12am, 6am, 12pm, 6pm
 CHECK_INTERVAL = 60  # Check every 60 seconds
@@ -60,8 +63,30 @@ def run_generator():
         logger.error(f"Error during scheduled run: {e}")
 
 
+def acquire_lock():
+    """Ensure only one scheduler instance runs at a time."""
+    if LOCK_FILE.exists():
+        try:
+            pid = int(LOCK_FILE.read_text().strip())
+            os.kill(pid, 0)  # Check if PID is alive
+            logger.error(f"Scheduler already running (PID {pid}). Exiting.")
+            sys.exit(1)
+        except (ProcessLookupError, ValueError):
+            pass  # Stale lock, continue
+    LOCK_FILE.write_text(str(os.getpid()))
+
+
+def release_lock():
+    try:
+        LOCK_FILE.unlink(missing_ok=True)
+    except Exception:
+        pass
+
+
 def main():
     global last_run_hour
+
+    acquire_lock()
 
     logger.info("HyperIndex Scheduler starting...")
     logger.info(f"Schedule: {SCHEDULE_HOURS} (hours)")
@@ -92,4 +117,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    finally:
+        release_lock()

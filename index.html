@@ -3,179 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HyperIndex - The Hyperliquid Elite Trader Index</title>
+    <title>HyperIndex - Track Elite Trader Positioning</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.cdnfonts.com/css/general-sans" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; font-family: 'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        .font-general-sans { font-family: 'General Sans', sans-serif; }
-        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        body { margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #06090f; }
+        .animate-pulse-slow { animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: .6; } }
+
+        /* Scrollbar for chart tabs on mobile */
+        .tabs-scroll::-webkit-scrollbar { height: 0; }
+        .tabs-scroll { scrollbar-width: none; }
+
+        /* Data table styling */
+        .data-table th { text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.7rem; }
+        .data-table td { font-variant-numeric: tabular-nums; }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+<body class="min-h-screen text-white">
 
     <!-- Header -->
-    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <header class="border-b border-white/5 bg-[#06090f]/90 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="relative">
-                    <img src="images/logo-icon.jpg" alt="HyperIndex" class="w-12 h-12 rounded-xl shadow-lg">
-                    <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <img src="images/logo-icon.jpg" alt="HyperIndex" class="w-9 h-9 rounded-lg">
+                    <div class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse-slow border-2 border-[#06090f]"></div>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-medium font-general-sans bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Hyper<em class="italic">Index</em></h1>
-                    <p class="text-xs text-slate-400">The Hyperliquid Elite Trader Index</p>
+                    <h1 class="text-lg font-semibold tracking-tight">Hyper<em class="italic text-blue-400">Index</em></h1>
                 </div>
             </div>
             <div class="flex items-center space-x-4">
-                <div class="text-right hidden md:block">
-                    <div class="text-xs text-slate-500" id="lastUpdated">Loading...</div>
-                    <div id="liveStatus" class="text-sm font-mono text-green-400 flex items-center space-x-1">
-                        <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <div class="text-right hidden sm:block">
+                    <div class="text-[11px] text-slate-500 font-mono" id="lastUpdated">Loading...</div>
+                    <div id="liveStatus" class="text-xs font-mono text-emerald-400 flex items-center justify-end space-x-1">
+                        <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse-slow"></div>
                         <span>Live</span>
                     </div>
-                    <div id="staleWarning" class="hidden text-sm font-mono text-yellow-400 flex items-center space-x-1">
-                        <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                    <div id="staleWarning" class="hidden text-xs font-mono text-amber-400 flex items-center justify-end space-x-1">
+                        <div class="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
                         <span id="staleText">Data is stale</span>
                     </div>
                 </div>
-                <button onclick="showPricing()" class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-semibold hover:from-blue-500 hover:to-purple-500 transition-all shadow-lg shadow-blue-500/30">
-                    Subscribe Now
+                <button onclick="showPricing()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-semibold transition-colors">
+                    Subscribe
                 </button>
             </div>
         </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="border-b border-slate-800/60 bg-gradient-to-b from-slate-950 to-slate-900/50">
-        <div class="max-w-7xl mx-auto px-6 py-16 md:py-20 text-center">
-            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-6 tracking-wide uppercase">
-                <div class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></div>
-                <span>The Hyperliquid Elite Trader Index</span>
+    <section class="border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-16 text-center">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/8 border border-blue-500/15 text-blue-400 text-[11px] font-semibold mb-5 tracking-widest uppercase">
+                <div class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse-slow"></div>
+                <span>Hyperliquid Elite Trader Index</span>
             </div>
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                Track Elite Trader Positioning<br class="hidden md:block">
-                <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Before The Market Moves</span>
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 leading-tight tracking-tight text-white">
+                Track Elite Trader Positioning
             </h1>
-            <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                HyperIndex tracks 100 curated Elite Traders on Hyperliquid and distills their positioning into the <span class="text-white font-semibold">HEAT Score</span>, asset tilts, and conviction metrics.
+            <p class="text-base md:text-lg text-slate-400 max-w-xl mx-auto mb-8 leading-relaxed">
+                100 curated Elite Traders. Real-time positioning distilled into the <span class="text-white font-medium">HEAT Score</span>, asset tilts, and conviction metrics.
             </p>
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-semibold hover:from-blue-500 hover:to-purple-500 transition-all shadow-lg shadow-blue-500/30">
-                    View Dashboard
-                </button>
-                <button onclick="showPricing()" class="px-8 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg font-semibold border border-slate-700 transition-all">
-                    See Plans
-                </button>
-            </div>
+            <button onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})" class="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-semibold transition-colors">
+                View Dashboard
+            </button>
         </div>
     </section>
 
-    <div id="dashboard" class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+    <div id="dashboard" class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-5">
 
         <!-- Hero Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <!-- Index Score -->
-            <div class="col-span-1 md:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 border border-slate-700 shadow-2xl relative overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5"></div>
-                <div class="relative">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
-                            <div class="text-slate-400 text-sm mb-1">HEAT Score</div>
-                            <div class="text-xs text-slate-500">Aggregate positioning of <span id="walletCount">--</span> Elite Traders</div>
-                        </div>
-                        <svg id="trendIcon" class="w-8 h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-                    </div>
-                    <div class="text-6xl font-bold mb-3" id="indexScore">--</div>
-                    <div class="flex items-center space-x-3">
-                        <span class="px-3 py-1 rounded-full text-sm font-semibold" id="directionBadge">--</span>
-                        <span class="text-slate-400 text-sm" id="leverageText">L_cohort_total: --</span>
-                    </div>
+            <div class="col-span-1 md:col-span-2 bg-white/[0.03] rounded-xl p-6 border border-white/[0.06]">
+                <div class="mb-4">
+                    <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">HEAT Score</div>
+                    <div class="text-[11px] text-slate-600">Aggregate positioning of <span id="walletCount" class="text-slate-400">--</span> Elite Traders</div>
+                </div>
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="text-5xl font-bold font-mono tracking-tight" id="indexScore">--</div>
+                    <svg id="trendIcon" class="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="px-2.5 py-0.5 rounded text-xs font-semibold" id="directionBadge">--</span>
+                    <span class="text-slate-500 text-xs font-mono" id="leverageText">L_cohort_total: --</span>
                 </div>
             </div>
 
             <!-- Smart Traders -->
-            <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center space-x-3">
-                        <svg class="w-6 h-6 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        <div class="text-slate-400 text-sm">Elite Traders</div>
-                    </div>
-                    <span id="rebalanceBadge" class="hidden px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">Rebalanced</span>
+            <div class="bg-white/[0.03] rounded-xl p-5 border border-white/[0.06]">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Elite Traders</div>
+                    <span id="rebalanceBadge" class="hidden px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">Rebalanced</span>
                 </div>
-                <div class="text-4xl font-bold mb-1" id="activeWallets">--</div>
-                <div class="text-sm text-slate-400">Elite Traders tracked</div>
-                <div class="mt-3 text-xs text-slate-500" id="totalEquity">$-- total equity</div>
-                <div class="mt-1 text-xs text-slate-600" id="rebalanceDate"></div>
+                <div class="text-3xl font-bold font-mono mb-1" id="activeWallets">--</div>
+                <div class="text-xs text-slate-500">wallets tracked</div>
+                <div class="mt-3 text-[11px] text-slate-600 font-mono" id="totalEquity">$-- total equity</div>
+                <div class="mt-0.5 text-[11px] text-slate-700" id="rebalanceDate"></div>
             </div>
 
             <!-- Total Exposure -->
-            <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700">
-                <div class="flex items-center space-x-3 mb-4">
-                    <svg class="w-6 h-6 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    <div class="text-slate-400 text-sm">Total Exposure</div>
-                </div>
-                <div class="text-4xl font-bold mb-1" id="grossNotional">$--</div>
-                <div class="text-sm text-slate-400">Combined notional</div>
-                <div class="mt-3 text-xs text-slate-500" id="netExposure">Net: $-- long</div>
+            <div class="bg-white/[0.03] rounded-xl p-5 border border-white/[0.06]">
+                <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-3">Total Exposure</div>
+                <div class="text-3xl font-bold font-mono mb-1" id="grossNotional">$--</div>
+                <div class="text-xs text-slate-500">combined notional</div>
+                <div class="mt-3 text-[11px] text-slate-600 font-mono" id="netExposure">Net: $-- long</div>
             </div>
         </div>
 
         <!-- Free Preview Banner -->
-        <div class="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/30 rounded-xl p-4 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <svg class="w-5 h-5 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <div class="bg-blue-500/5 border border-blue-500/10 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:justify-between">
+            <div class="flex items-start sm:items-center space-x-3">
+                <svg class="w-4 h-4 text-blue-400 mt-0.5 sm:mt-0 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 <div>
-                    <div class="font-semibold">Free Preview Mode</div>
-                    <div class="text-sm text-slate-300">Showing top 5 assets. Subscribe to unlock all <span id="assetCountBanner">--</span> tracked assets.</div>
+                    <div class="text-sm font-semibold">Free Preview</div>
+                    <div class="text-xs text-slate-400">Top 5 assets visible. Subscribe to unlock all <span id="assetCountBanner">--</span> tracked assets.</div>
                 </div>
             </div>
-            <button onclick="showPricing()" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold whitespace-nowrap">Unlock All</button>
+            <button onclick="showPricing()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors">Unlock All</button>
         </div>
 
         <!-- Charts -->
-        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700">
-            <div class="flex items-center justify-between mb-6">
+        <div class="bg-white/[0.03] rounded-xl p-4 sm:p-6 border border-white/[0.06]">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
                 <div>
-                    <h2 class="text-xl font-bold mb-1">Elite Trader Positioning</h2>
-                    <p class="text-sm text-slate-400">Historical Elite Trader exposure</p>
+                    <h2 class="text-base font-semibold mb-0.5">Elite Trader Positioning</h2>
+                    <p class="text-xs text-slate-500">Historical exposure over time</p>
                 </div>
-                <div class="flex space-x-1 bg-slate-800 rounded-lg p-1">
-                    <button onclick="setChart('net')" id="btn-net" class="px-3 py-1.5 rounded text-xs font-semibold bg-blue-600 text-white">Net Position</button>
-                    <button onclick="setChart('exposure')" id="btn-exposure" class="px-3 py-1.5 rounded text-xs font-semibold text-slate-400 hover:text-white">Total Exposure</button>
-                    <button onclick="setChart('longshort')" id="btn-longshort" class="px-3 py-1.5 rounded text-xs font-semibold text-slate-400 hover:text-white">Long/Short</button>
-                    <button onclick="setChart('assets')" id="btn-assets" class="px-3 py-1.5 rounded text-xs font-semibold text-slate-400 hover:text-white">By Asset</button>
-                    <button onclick="setChart('equity')" id="btn-equity" class="px-3 py-1.5 rounded text-xs font-semibold text-slate-400 hover:text-white">Total Equity</button>
-                    <button onclick="setChart('leverage')" id="btn-leverage" class="px-3 py-1.5 rounded text-xs font-semibold text-slate-400 hover:text-white">Leverage</button>
+                <div class="tabs-scroll flex overflow-x-auto gap-1 bg-white/[0.03] rounded-lg p-1">
+                    <button onclick="setChart('net')" id="btn-net" class="px-3 py-1.5 rounded-md text-xs font-medium bg-blue-600 text-white whitespace-nowrap transition-colors">Net Position</button>
+                    <button onclick="setChart('exposure')" id="btn-exposure" class="px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-300 whitespace-nowrap transition-colors">Exposure</button>
+                    <button onclick="setChart('longshort')" id="btn-longshort" class="px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-300 whitespace-nowrap transition-colors">Long/Short</button>
+                    <button onclick="setChart('assets')" id="btn-assets" class="px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-300 whitespace-nowrap transition-colors">By Asset</button>
+                    <button onclick="setChart('equity')" id="btn-equity" class="px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-300 whitespace-nowrap transition-colors">Equity</button>
+                    <button onclick="setChart('leverage')" id="btn-leverage" class="px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-300 whitespace-nowrap transition-colors">Leverage</button>
                 </div>
             </div>
-            <div style="height: 350px;">
+            <div style="height: 320px;">
                 <canvas id="mainChart"></canvas>
             </div>
         </div>
 
         <!-- Asset Table -->
-        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold">Elite Trader Positioning by Asset</h2>
-                <div class="text-sm text-slate-400"><span id="assetCount">--</span> assets tracked</div>
+        <div class="bg-white/[0.03] rounded-xl p-4 sm:p-6 border border-white/[0.06]">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-semibold">Positioning by Asset</h2>
+                <div class="text-xs text-slate-500 font-mono"><span id="assetCount">--</span> assets</div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full">
+            <div class="overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6">
+                <table class="w-full data-table min-w-[700px]">
                     <thead>
-                        <tr class="text-left text-sm text-slate-400 border-b border-slate-700">
-                            <th class="pb-3 font-semibold">Asset</th>
-                            <th class="pb-3 font-semibold">Net Position</th>
-                            <th class="pb-3 font-semibold">Tilt</th>
-                            <th class="pb-3 font-semibold">Net Leverage</th>
-                            <th class="pb-3 font-semibold">Conviction</th>
-                            <th class="pb-3 font-semibold">Elite Traders</th>
+                        <tr class="text-left text-slate-500 border-b border-white/[0.06]">
+                            <th class="pb-3 font-semibold pr-4">Asset</th>
+                            <th class="pb-3 font-semibold pr-4">Net Position</th>
+                            <th class="pb-3 font-semibold pr-4">Tilt</th>
+                            <th class="pb-3 font-semibold pr-4">Net Leverage</th>
+                            <th class="pb-3 font-semibold pr-4">Conviction</th>
+                            <th class="pb-3 font-semibold text-center">Traders</th>
                         </tr>
                     </thead>
                     <tbody id="assetTableBody">
-                        <tr><td colspan="6" class="py-8 text-center text-slate-500">Loading...</td></tr>
+                        <tr><td colspan="6" class="py-8 text-center text-slate-600 text-sm">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -183,50 +174,75 @@
         </div>
 
         <!-- Signals -->
-        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700">
-            <h2 class="text-xl font-bold mb-6">Elite Trader Signals</h2>
-            <div class="space-y-3" id="signalsContainer">
-                <div class="text-slate-500 text-center py-4">Loading signals...</div>
+        <div class="bg-white/[0.03] rounded-xl p-4 sm:p-6 border border-white/[0.06]">
+            <h2 class="text-base font-semibold mb-4">Signals</h2>
+            <div class="space-y-2" id="signalsContainer">
+                <div class="text-slate-600 text-center py-4 text-sm">Loading signals...</div>
+            </div>
+        </div>
+
+        <!-- Notable Position Changes -->
+        <div class="bg-white/[0.03] rounded-xl p-4 sm:p-6 border border-white/[0.06]">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-semibold">Notable Position Shifts</h2>
+                <span class="text-[11px] text-slate-600 font-mono" id="shiftTimeframe">24h change</span>
+            </div>
+            <div id="positionChangesContainer">
+                <div class="text-slate-600 text-center py-4 text-sm">Loading position data...</div>
             </div>
         </div>
     </div>
 
     <!-- Pricing Modal -->
-    <div id="pricingModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
-        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 border border-slate-700 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-8">
+    <div id="pricingModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-[#0d1117] rounded-xl p-6 sm:p-8 border border-white/[0.06] max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
                 <div>
-                    <h2 class="text-3xl font-bold mb-2">Unlock HyperIndex</h2>
-                    <p class="text-slate-400">Get real-time Elite Trader insights</p>
+                    <h2 class="text-2xl font-bold mb-1">Unlock HyperIndex</h2>
+                    <p class="text-sm text-slate-500">Real-time Elite Trader insights</p>
                 </div>
-                <button onclick="hidePricing()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
+                <button onclick="hidePricing()" class="text-slate-500 hover:text-white text-xl w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors">&times;</button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
-                    <div class="text-center mb-6"><h3 class="text-xl font-bold mb-2">Starter</h3><div class="text-4xl font-bold mb-1">$49</div><div class="text-slate-400 text-sm">per month</div></div>
-                    <ul class="space-y-3 mb-6"><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Top 15 assets</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Updates twice daily</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Email alerts</span></li></ul>
-                    <button class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold">Start Free Trial</button>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white/[0.03] rounded-xl p-6 border border-white/[0.06]">
+                    <div class="mb-5"><h3 class="text-lg font-semibold mb-1">Starter</h3><div class="text-3xl font-bold font-mono">$49<span class="text-sm text-slate-500 font-normal">/mo</span></div></div>
+                    <ul class="space-y-2.5 mb-6 text-sm text-slate-300">
+                        <li class="flex items-center space-x-2"><span class="text-emerald-400 text-xs">&#10003;</span><span>Top 15 assets</span></li>
+                        <li class="flex items-center space-x-2"><span class="text-emerald-400 text-xs">&#10003;</span><span>Updates twice daily</span></li>
+                        <li class="flex items-center space-x-2"><span class="text-emerald-400 text-xs">&#10003;</span><span>Email alerts</span></li>
+                    </ul>
+                    <button class="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-semibold transition-colors">Start Free Trial</button>
                 </div>
-                <div class="bg-gradient-to-br from-blue-900/50 to-purple-900/50 rounded-xl p-6 border-2 border-blue-500 relative">
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-1 rounded-full text-xs font-bold">MOST POPULAR</div>
-                    <div class="text-center mb-6"><h3 class="text-xl font-bold mb-2">Pro</h3><div class="text-4xl font-bold mb-1">$149</div><div class="text-slate-400 text-sm">per month</div></div>
-                    <ul class="space-y-3 mb-6"><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">All 100+ assets</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Real-time (15min)</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Telegram + Discord</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">API access</span></li></ul>
-                    <button class="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-semibold">Start Free Trial</button>
+                <div class="bg-white/[0.03] rounded-xl p-6 border-2 border-blue-500/40 relative">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 px-3 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Popular</div>
+                    <div class="mb-5"><h3 class="text-lg font-semibold mb-1">Pro</h3><div class="text-3xl font-bold font-mono">$149<span class="text-sm text-slate-500 font-normal">/mo</span></div></div>
+                    <ul class="space-y-2.5 mb-6 text-sm text-slate-300">
+                        <li class="flex items-center space-x-2"><span class="text-emerald-400 text-xs">&#10003;</span><span>All 100+ assets</span></li>
+                        <li class="flex items-center space-x-2"><span class="text-emerald-400 text-xs">&#10003;</span><span>Real-time (15min)</span></li>
+                        <li class="flex items-center space-x-2"><span class="text-emerald-400 text-xs">&#10003;</span><span>Telegram + Discord</span></li>
+                        <li class="flex items-center space-x-2"><span class="text-emerald-400 text-xs">&#10003;</span><span>API access</span></li>
+                    </ul>
+                    <button class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-semibold transition-colors">Start Free Trial</button>
                 </div>
-                <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
-                    <div class="text-center mb-6"><h3 class="text-xl font-bold mb-2">Elite</h3><div class="text-4xl font-bold mb-1">$399</div><div class="text-slate-400 text-sm">per month</div></div>
-                    <ul class="space-y-3 mb-6"><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Instant updates</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Wallet tracking</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Custom webhooks</span></li><li class="flex items-center space-x-2"><svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span class="text-sm">Priority support</span></li></ul>
-                    <button class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold">Contact Sales</button>
+                <div class="bg-white/[0.03] rounded-xl p-6 border border-white/[0.06]">
+                    <div class="mb-5"><h3 class="text-lg font-semibold mb-1">Elite</h3><div class="text-3xl font-bold font-mono">$399<span class="text-sm text-slate-500 font-normal">/mo</span></div></div>
+                    <ul class="space-y-2.5 mb-6 text-sm text-slate-300">
+                        <li class="flex items-center space-x-2"><span class="text-emerald-400 text-xs">&#10003;</span><span>Instant updates</span></li>
+                        <li class="flex items-center space-x-2"><span class="text-emerald-400 text-xs">&#10003;</span><span>Wallet tracking</span></li>
+                        <li class="flex items-center space-x-2"><span class="text-emerald-400 text-xs">&#10003;</span><span>Custom webhooks</span></li>
+                        <li class="flex items-center space-x-2"><span class="text-emerald-400 text-xs">&#10003;</span><span>Priority support</span></li>
+                    </ul>
+                    <button class="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-semibold transition-colors">Contact Sales</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-800 mt-12 py-8 text-center text-slate-500 text-sm">
-        <p class="font-semibold text-slate-300 mb-1">HyperIndex</p>
-        <p>Real-time tracking of Elite Traders on Hyperliquid · hyperindex.io</p>
-        <p class="mt-2 text-xs">Not financial advice · Use at your own risk</p>
+    <footer class="border-t border-white/5 mt-8 py-6 text-center text-slate-600 text-xs">
+        <p class="font-semibold text-slate-400 mb-0.5">HyperIndex</p>
+        <p>Real-time Elite Trader positioning on Hyperliquid</p>
+        <p class="mt-1.5 text-slate-700">Not financial advice. Use at your own risk.</p>
     </footer>
 
     <script>
@@ -268,11 +284,11 @@
         };
 
         const tiltColor = (t) => {
-            if (t > 0.5) return 'bg-green-500/20 text-green-400 border border-green-500/30';
-            if (t > 0.2) return 'bg-green-500/10 text-green-300 border border-green-500/20';
-            if (t > -0.2) return 'bg-yellow-500/10 text-yellow-300 border border-yellow-500/20';
-            if (t > -0.5) return 'bg-red-500/10 text-red-300 border border-red-500/20';
-            return 'bg-red-500/20 text-red-400 border border-red-500/30';
+            if (t > 0.5) return 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20';
+            if (t > 0.2) return 'bg-emerald-500/8 text-emerald-300 border border-emerald-500/10';
+            if (t > -0.2) return 'bg-amber-500/8 text-amber-300 border border-amber-500/10';
+            if (t > -0.5) return 'bg-red-500/8 text-red-300 border border-red-500/10';
+            return 'bg-red-500/15 text-red-400 border border-red-500/20';
         };
 
         // Modal
@@ -287,10 +303,10 @@
                 const btn = document.getElementById(`btn-${t}`);
                 if (t === type) {
                     btn.classList.add('bg-blue-600', 'text-white');
-                    btn.classList.remove('text-slate-400');
+                    btn.classList.remove('text-slate-500');
                 } else {
                     btn.classList.remove('bg-blue-600', 'text-white');
-                    btn.classList.add('text-slate-400');
+                    btn.classList.add('text-slate-500');
                 }
             });
             renderChart();
@@ -316,18 +332,20 @@
                 maintainAspectRatio: false,
                 interaction: { intersect: false, mode: 'index' },
                 plugins: {
-                    legend: { labels: { color: '#94a3b8', filter: item => item.text !== '' } },
+                    legend: { labels: { color: '#64748b', font: { family: 'monospace', size: 11 }, filter: item => item.text !== '' } },
                     tooltip: {
-                        backgroundColor: '#0f172a',
-                        borderColor: '#334155',
+                        backgroundColor: '#0d1117',
+                        borderColor: '#1e293b',
                         borderWidth: 1,
-                        titleColor: '#f1f5f9',
-                        bodyColor: '#cbd5e1'
+                        titleColor: '#e2e8f0',
+                        bodyColor: '#94a3b8',
+                        titleFont: { family: 'monospace' },
+                        bodyFont: { family: 'monospace' }
                     }
                 },
                 scales: {
-                    x: { ticks: { color: '#64748b', maxTicksLimit: 10 }, grid: { color: '#1e293b' } },
-                    y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }
+                    x: { ticks: { color: '#475569', maxTicksLimit: 8, font: { family: 'monospace', size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } },
+                    y: { ticks: { color: '#475569', font: { family: 'monospace', size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } }
                 }
             };
 
@@ -338,16 +356,17 @@
                         label: 'Net Position ($M)',
                         data: netValues,
                         borderColor: '#10b981',
-                        fill: { target: { value: 0 }, above: 'rgba(16, 185, 129, 0.1)', below: 'transparent' },
+                        fill: { target: { value: 0 }, above: 'rgba(16, 185, 129, 0.08)', below: 'transparent' },
                         segment: { borderColor: ctx => ctx.p1.parsed.y < 0 ? '#ef4444' : '#10b981' },
                         tension: 0.3,
                         pointRadius: 0,
+                        borderWidth: 1.5,
                     },
                     {
                         label: '',
                         data: netValues,
                         borderColor: 'transparent',
-                        fill: { target: { value: 0 }, above: 'transparent', below: 'rgba(239, 68, 68, 0.1)' },
+                        fill: { target: { value: 0 }, above: 'transparent', below: 'rgba(239, 68, 68, 0.08)' },
                         tension: 0.3,
                         pointRadius: 0,
                         tooltip: { enabled: false },
@@ -358,9 +377,10 @@
                     label: 'Total Exposure ($M)',
                     data: hourly.map(d => ((d.gross_long_usd + d.gross_short_usd) / 1e6).toFixed(1)),
                     borderColor: '#eab308',
-                    backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                    backgroundColor: 'rgba(234, 179, 8, 0.06)',
                     fill: true,
-                    tension: 0.3
+                    tension: 0.3,
+                    borderWidth: 1.5,
                 }];
             } else if (currentChartType === 'longshort') {
                 datasets = [
@@ -368,43 +388,47 @@
                         label: 'Gross Long ($M)',
                         data: hourly.map(d => (d.gross_long_usd / 1e6).toFixed(1)),
                         borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.06)',
                         fill: true,
-                        tension: 0.3
+                        tension: 0.3,
+                        borderWidth: 1.5,
                     },
                     {
                         label: 'Gross Short ($M)',
                         data: hourly.map(d => -(d.gross_short_usd / 1e6).toFixed(1)),
                         borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        backgroundColor: 'rgba(239, 68, 68, 0.06)',
                         fill: true,
-                        tension: 0.3
+                        tension: 0.3,
+                        borderWidth: 1.5,
                     }
                 ];
             } else if (currentChartType === 'assets') {
                 datasets = [
-                    { label: 'BTC Net ($M)', data: hourly.map(d => (d.btc_net_usd / 1e6).toFixed(1)), borderColor: '#f7931a', tension: 0.3 },
-                    { label: 'ETH Net ($M)', data: hourly.map(d => (d.eth_net_usd / 1e6).toFixed(1)), borderColor: '#627eea', tension: 0.3 },
-                    { label: 'SOL Net ($M)', data: hourly.map(d => (d.sol_net_usd / 1e6).toFixed(1)), borderColor: '#14f195', tension: 0.3 },
-                    { label: 'HYPE Net ($M)', data: hourly.map(d => (d.hype_net_usd / 1e6).toFixed(1)), borderColor: '#a855f7', tension: 0.3 }
+                    { label: 'BTC Net ($M)', data: hourly.map(d => (d.btc_net_usd / 1e6).toFixed(1)), borderColor: '#f7931a', tension: 0.3, borderWidth: 1.5 },
+                    { label: 'ETH Net ($M)', data: hourly.map(d => (d.eth_net_usd / 1e6).toFixed(1)), borderColor: '#627eea', tension: 0.3, borderWidth: 1.5 },
+                    { label: 'SOL Net ($M)', data: hourly.map(d => (d.sol_net_usd / 1e6).toFixed(1)), borderColor: '#a855f7', tension: 0.3, borderWidth: 1.5 },
+                    { label: 'HYPE Net ($M)', data: hourly.map(d => (d.hype_net_usd / 1e6).toFixed(1)), borderColor: '#22d3ee', tension: 0.3, borderWidth: 1.5 }
                 ];
             } else if (currentChartType === 'equity') {
                 datasets = [{
                     label: 'Total Equity ($M)',
                     data: hourly.map(d => (d.cohort_total_equity / 1e6).toFixed(1)),
                     borderColor: '#8b5cf6',
-                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    backgroundColor: 'rgba(139, 92, 246, 0.06)',
                     fill: true,
-                    tension: 0.3
+                    tension: 0.3,
+                    borderWidth: 1.5,
                 }];
             } else if (currentChartType === 'leverage') {
                 datasets = [{
                     label: 'Total Leverage',
                     data: hourly.map(d => d.L_cohort_total?.toFixed(1) || 0),
                     borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.06)',
                     fill: true,
-                    tension: 0.3
+                    tension: 0.3,
+                    borderWidth: 1.5,
                 }];
                 chartOptions.scales.y.ticks.callback = (v) => parseFloat(v).toFixed(1) + 'x';
             }
@@ -424,46 +448,59 @@
             if (!indexData || !indexData.assets) return;
 
             const tbody = document.getElementById('assetTableBody');
-            const assets = indexData.assets;
+            const allAssets = indexData.assets;
+
+            // Pin BTC, ETH, SOL, HYPE as first 4 (matching chart), then top non-core asset by abs net USD
+            const CORE = ['BTC', 'ETH', 'SOL', 'HYPE'];
+            const coreAssets = CORE.map(name => allAssets.find(a => a.asset === name)).filter(Boolean);
+            const nonCore = allAssets
+                .filter(a => !CORE.includes(a.asset))
+                .sort((a, b) => Math.abs(b.net_usd) - Math.abs(a.net_usd));
+            const topNonCore = nonCore.slice(0, 1);   // 5th free row
+            const lockedPreview = nonCore.slice(1, 6); // 5 locked rows
+
+            const freeRows = [...coreAssets, ...topNonCore].map(a => ({ ...a, free: true }));
+            const lockedRows = lockedPreview.map(a => ({ ...a, free: false }));
+            const assets = [...freeRows, ...lockedRows];
+            const remainingCount = allAssets.length - freeRows.length;
 
             tbody.innerHTML = assets.map((a, i) => {
                 const isLocked = !a.free;
-                const rowClass = isLocked ? 'opacity-50' : 'hover:bg-slate-800/50';
+                const rowClass = isLocked ? 'opacity-40' : 'hover:bg-white/[0.02]';
                 const dataBlur = isLocked ? 'blur-[6px] select-none' : '';
-                const netColor = a.net_usd > 0 ? 'text-green-400' : 'text-red-400';
-                const lnetColor = a.L_net_equity > 0 ? 'text-green-400' : 'text-red-400';
+                const netColor = a.net_usd > 0 ? 'text-emerald-400' : 'text-red-400';
+                const lnetColor = a.L_net_equity > 0 ? 'text-emerald-400' : 'text-red-400';
                 const convWidth = Math.min(Math.abs(a.conv_equity) * 100, 100);
-                const convColor = Math.abs(a.conv_equity) > 0.7 ? 'bg-green-400' : Math.abs(a.conv_equity) > 0.4 ? 'bg-yellow-400' : 'bg-red-400';
+                const convColor = Math.abs(a.conv_equity) > 0.7 ? 'bg-emerald-400' : Math.abs(a.conv_equity) > 0.4 ? 'bg-amber-400' : 'bg-red-400';
 
                 return `
-                    <tr class="border-b border-slate-800 ${rowClass}">
-                        <td class="py-4">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-xs font-bold">${a.asset.substring(0,2)}</div>
-                                <span class="font-semibold">${a.asset}</span>
-                                ${isLocked ? '<svg class="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' : ''}
+                    <tr class="border-b border-white/[0.04] ${rowClass}">
+                        <td class="py-3 pr-4">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-7 h-7 bg-white/[0.06] rounded-lg flex items-center justify-center text-[10px] font-bold text-slate-400">${a.asset.substring(0,2)}</div>
+                                <span class="font-medium text-sm">${a.asset}</span>
+                                ${isLocked ? '<svg class="w-3 h-3 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' : ''}
                             </div>
                         </td>
-                        <td class="py-4"><div class="${netColor} font-semibold ${dataBlur}">${a.net_usd > 0 ? '+' : ''}${fmt(a.net_usd)}</div></td>
-                        <td class="py-4"><span class="px-3 py-1 rounded-lg text-xs font-semibold ${tiltColor(a.tilt)} ${dataBlur}">${a.tilt > 0 ? '+' : ''}${(a.tilt * 100).toFixed(0)}%</span></td>
-                        <td class="py-4"><span class="font-mono text-sm ${lnetColor} ${dataBlur}">${a.L_net_equity > 0 ? '+' : ''}${a.L_net_equity.toFixed(4)}</span></td>
-                        <td class="py-4">
+                        <td class="py-3 pr-4"><span class="${netColor} font-mono text-sm font-medium ${dataBlur}">${a.net_usd > 0 ? '+' : ''}${fmt(a.net_usd)}</span></td>
+                        <td class="py-3 pr-4"><span class="px-2 py-0.5 rounded text-[11px] font-semibold ${tiltColor(a.tilt)} ${dataBlur}">${a.tilt > 0 ? '+' : ''}${(a.tilt * 100).toFixed(0)}%</span></td>
+                        <td class="py-3 pr-4"><span class="font-mono text-sm ${lnetColor} ${dataBlur}">${a.L_net_equity > 0 ? '+' : ''}${a.L_net_equity.toFixed(4)}</span></td>
+                        <td class="py-3 pr-4">
                             <div class="flex items-center space-x-2 ${dataBlur}">
-                                <div class="w-20 bg-slate-700 rounded-full h-2"><div class="h-2 rounded-full ${convColor}" style="width:${convWidth}%"></div></div>
-                                <span class="text-xs text-slate-400 font-mono">${Math.abs(a.conv_equity).toFixed(2)}</span>
+                                <div class="w-16 bg-white/[0.06] rounded-full h-1.5"><div class="h-1.5 rounded-full ${convColor}" style="width:${convWidth}%"></div></div>
+                                <span class="text-[11px] text-slate-500 font-mono">${Math.abs(a.conv_equity).toFixed(2)}</span>
                             </div>
                         </td>
-                        <td class="py-4 text-center"><span class="px-2 py-1 bg-slate-700 rounded text-xs font-mono ${dataBlur}">${a.position_count}</span></td>
+                        <td class="py-3 text-center"><span class="text-xs font-mono text-slate-400 ${dataBlur}">${a.position_count}</span></td>
                     </tr>
                 `;
             }).join('');
 
-            const lockedCount = assets.filter(a => !a.free).length;
-            if (lockedCount > 0) {
+            if (remainingCount > 0) {
                 document.getElementById('unlockButton').innerHTML = `
-                    <button onclick="showPricing()" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold transition-all inline-flex items-center space-x-2">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        <span>Unlock ${lockedCount} More Assets</span>
+                    <button onclick="showPricing()" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-semibold transition-colors inline-flex items-center space-x-2">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span>Unlock ${remainingCount} More Assets</span>
                     </button>
                 `;
             }
@@ -475,52 +512,168 @@
 
             const signals = indexData.assets.slice(0, 5)
                 .filter(a => Math.abs(a.tilt) > 0.4 || Math.abs(a.L_net_equity) > 0.1)
-                .slice(0, 3)
+                .slice(0, 4)
                 .map(a => ({
                     ...a,
                     type: a.net_usd > 0 ? 'long' : 'short',
                     severity: Math.abs(a.L_net_equity) > 0.15 ? 'high' : Math.abs(a.tilt) > 0.7 ? 'medium' : 'low'
                 }));
 
-            const container = document.getElementById('signalsContainer');
-            let html = signals.map(s => {
-                const isLong = s.type === 'long';
-                const bgClass = isLong ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30';
-                const textClass = isLong ? 'text-green-400' : 'text-red-400';
-                const icon = isLong
-                    ? '<svg class="w-5 h-5 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>'
-                    : '<svg class="w-5 h-5 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>';
+            const ASSET_COLORS = {
+                'BTC': '#f7931a', 'ETH': '#627eea', 'SOL': '#a855f7', 'HYPE': '#22d3ee',
+                'PAXG': '#e6b800', 'AVAX': '#e84142', 'LINK': '#2a5ada', 'DOGE': '#c2a633',
+                'XRP': '#00aae4', 'ADA': '#0033ad', 'DOT': '#e6007a', 'MATIC': '#8247e5',
+            };
 
-                return `
-                    <div class="${bgClass} border rounded-lg p-4 flex items-start space-x-3">
-                        <span class="${textClass}">${icon}</span>
-                        <div class="flex-1">
-                            <div class="font-semibold ${textClass}">${s.asset} ${s.severity === 'high' ? 'Extreme' : 'Strong'} ${isLong ? 'Long' : 'Short'} Signal</div>
-                            <div class="text-sm text-slate-300 mt-1 flex items-center flex-wrap gap-x-4">
-                                <span class="font-mono">Net Leverage: ${s.L_net_equity > 0 ? '+' : ''}${s.L_net_equity.toFixed(3)}</span>
-                                <span class="text-slate-600">·</span>
-                                <span class="font-mono">Tilt: ${(s.tilt * 100).toFixed(0)}%</span>
-                                <span class="text-slate-600">·</span>
-                                <span>${s.position_count} Elite Traders</span>
+            const container = document.getElementById('signalsContainer');
+            let html = '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">';
+
+            signals.forEach(s => {
+                const isLong = s.type === 'long';
+                const textClass = isLong ? 'text-emerald-400' : 'text-red-400';
+                const badgeBg = isLong ? 'bg-emerald-500/8' : 'bg-red-500/8';
+                const arrow = isLong
+                    ? '<svg class="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>'
+                    : '<svg class="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>';
+                const label = `${s.severity === 'high' ? 'Extreme' : 'Strong'} ${isLong ? 'Long' : 'Short'}`;
+                const dotColor = ASSET_COLORS[s.asset] || '#64748b';
+
+                html += `
+                    <div class="border border-white/[0.06] rounded-lg p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 rounded-full" style="background:${dotColor}"></div>
+                                <span class="font-semibold text-sm">${s.asset}</span>
                             </div>
-                            <div class="text-xs text-slate-500 mt-2">Net ${s.net_usd > 0 ? '+' : ''}${fmt(s.net_usd)} position</div>
+                            <span class="${textClass} ${badgeBg} px-2 py-0.5 rounded text-xs font-semibold font-mono">
+                                ${arrow} ${label}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-slate-500">Net: <span class="font-mono text-slate-400">${s.net_usd > 0 ? '+' : ''}${fmt(s.net_usd)}</span></span>
+                            <span class="text-slate-500">Tilt: <span class="font-mono ${textClass}">${s.tilt > 0 ? '+' : ''}${(s.tilt * 100).toFixed(0)}%</span></span>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px] mt-1">
+                            <span class="text-slate-500">Leverage: <span class="font-mono text-slate-400">${s.L_net_equity > 0 ? '+' : ''}${s.L_net_equity.toFixed(3)}</span></span>
+                            <span class="text-slate-500"><span class="font-mono text-slate-400">${s.position_count}</span> traders</span>
                         </div>
                     </div>
                 `;
-            }).join('');
+            });
 
-            // Add locked signal
+            html += '</div>';
+
+            // Add locked signal (same style as position shifts pro teaser)
             html += `
-                <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 flex items-start space-x-3 relative">
-                    <svg class="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    <div class="flex-1 blur-sm">
-                        <div class="font-semibold text-yellow-400">HEAT Spike Detected</div>
-                        <div class="text-sm text-slate-300 mt-1">High conviction signal detected...</div>
+                <div class="mt-3 border border-white/[0.04] rounded-lg p-3 relative">
+                    <div class="blur-sm flex items-center justify-between">
+                        <span class="text-sm text-slate-400">HEAT Spike detected — high conviction signal</span>
+                        <span class="text-xs text-amber-400 font-mono">+0.42 conv</span>
                     </div>
                     <div class="absolute inset-0 flex items-center justify-center">
-                        <div class="bg-slate-900/90 px-4 py-2 rounded-lg border border-slate-700 flex items-center space-x-2">
-                            <svg class="w-4 h-4 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            <span class="text-sm font-semibold">Pro Tier</span>
+                        <div class="bg-[#06090f]/90 px-3 py-1.5 rounded-lg border border-white/10 flex items-center space-x-1.5">
+                            <svg class="w-3 h-3 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <span class="text-xs font-semibold">Pro</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Render notable position changes (uses history data)
+        function renderPositionChanges() {
+            if (!historyData || !historyData.hourly || historyData.hourly.length < 2) return;
+            if (!indexData || !indexData.assets) return;
+
+            const container = document.getElementById('positionChangesContainer');
+            const hourly = historyData.hourly;
+            const latest = hourly[hourly.length - 1];
+
+            // Find a point ~24h ago (or closest available)
+            const latestTs = new Date(latest.timestamp).getTime();
+            const targetTs = latestTs - (24 * 60 * 60 * 1000);
+            let prevPoint = hourly[0];
+            for (const p of hourly) {
+                if (new Date(p.timestamp).getTime() <= targetTs) {
+                    prevPoint = p;
+                } else {
+                    break;
+                }
+            }
+
+            // Calculate actual hours between points
+            const actualHours = Math.round((latestTs - new Date(prevPoint.timestamp).getTime()) / (60 * 60 * 1000));
+            const timeLabel = actualHours <= 26 ? '24h' : `${Math.round(actualHours / 24)}d`;
+            document.getElementById('shiftTimeframe').textContent = `${timeLabel} change`;
+
+            // Tracked assets with history fields
+            const tracked = [
+                { key: 'btc', label: 'BTC', netField: 'btc_net_usd', color: '#f7931a' },
+                { key: 'eth', label: 'ETH', netField: 'eth_net_usd', color: '#627eea' },
+                { key: 'sol', label: 'SOL', netField: 'sol_net_usd', color: '#a855f7' },
+                { key: 'hype', label: 'HYPE', netField: 'hype_net_usd', color: '#22d3ee' },
+            ];
+
+            // Compute deltas and sort by absolute change magnitude
+            const changes = tracked.map(t => {
+                const nowNet = latest[t.netField] || 0;
+                const prevNet = prevPoint[t.netField] || 0;
+                const delta = nowNet - prevNet;
+                const pctChange = prevNet !== 0 ? ((delta / Math.abs(prevNet)) * 100) : 0;
+
+                // Find current tilt from index data
+                const assetData = indexData.assets.find(a => a.asset === t.label);
+                const tilt = assetData ? assetData.tilt : 0;
+
+                return { ...t, nowNet, delta, pctChange, tilt, absDelta: Math.abs(delta) };
+            }).sort((a, b) => b.absDelta - a.absDelta);
+
+            let html = '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">';
+
+            changes.forEach((c, i) => {
+                const isPositive = c.delta > 0;
+                const deltaColor = isPositive ? 'text-emerald-400' : 'text-red-400';
+                const deltaBg = isPositive ? 'bg-emerald-500/8' : 'bg-red-500/8';
+                const arrow = isPositive
+                    ? '<svg class="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>'
+                    : '<svg class="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>';
+                const tiltPct = (c.tilt * 100).toFixed(0);
+                const tiltColor = c.tilt > 0.2 ? 'text-emerald-400' : c.tilt < -0.2 ? 'text-red-400' : 'text-amber-400';
+
+                html += `
+                    <div class="border border-white/[0.06] rounded-lg p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 rounded-full" style="background:${c.color}"></div>
+                                <span class="font-semibold text-sm">${c.label}</span>
+                            </div>
+                            <span class="${deltaColor} ${deltaBg} px-2 py-0.5 rounded text-xs font-semibold font-mono">
+                                ${arrow} ${isPositive ? '+' : ''}${fmt(c.delta)}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-slate-500">Net: <span class="font-mono text-slate-400">${fmt(c.nowNet)}</span></span>
+                            <span class="text-slate-500">Tilt: <span class="font-mono ${tiltColor}">${tiltPct > 0 ? '+' : ''}${tiltPct}%</span></span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+
+            // Add locked teaser for additional assets
+            html += `
+                <div class="mt-3 border border-white/[0.04] rounded-lg p-3 relative">
+                    <div class="blur-sm flex items-center justify-between">
+                        <span class="text-sm text-slate-400">+ 44 more asset shifts tracked in real-time</span>
+                        <span class="text-xs text-emerald-400 font-mono">+$2.1M</span>
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="bg-[#06090f]/90 px-3 py-1.5 rounded-lg border border-white/10 flex items-center space-x-1.5">
+                            <svg class="w-3 h-3 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <span class="text-xs font-semibold">Pro</span>
                         </div>
                     </div>
                 </div>
@@ -538,29 +691,29 @@
 
             // Index score
             document.getElementById('indexScore').textContent = (score > 0 ? '+' : '') + score.toFixed(4);
-            document.getElementById('indexScore').className = `text-6xl font-bold mb-3 ${score > 0.05 ? 'text-green-400' : score < -0.05 ? 'text-red-400' : 'text-yellow-400'}`;
+            document.getElementById('indexScore').className = `text-5xl font-bold font-mono mb-3 tracking-tight ${score > 0.05 ? 'text-emerald-400' : score < -0.05 ? 'text-red-400' : 'text-amber-400'}`;
 
             // Direction badge
             const badge = document.getElementById('directionBadge');
             if (score > 0.05) {
                 badge.textContent = 'Net Long';
-                badge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-green-500/20 text-green-400';
+                badge.className = 'px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-500/15 text-emerald-400';
             } else if (score < -0.05) {
                 badge.textContent = 'Net Short';
-                badge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-red-500/20 text-red-400';
+                badge.className = 'px-2.5 py-0.5 rounded text-xs font-semibold bg-red-500/15 text-red-400';
             } else {
                 badge.textContent = 'Neutral';
-                badge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-yellow-500/20 text-yellow-400';
+                badge.className = 'px-2.5 py-0.5 rounded text-xs font-semibold bg-amber-500/15 text-amber-400';
             }
 
             // Trend icon
             const trendIcon = document.getElementById('trendIcon');
             if (score > 0) {
                 trendIcon.innerHTML = '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>';
-                trendIcon.className = 'w-8 h-8 text-green-400';
+                trendIcon.setAttribute('class', 'w-5 h-5 text-emerald-400');
             } else {
                 trendIcon.innerHTML = '<polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>';
-                trendIcon.className = 'w-8 h-8 text-red-400';
+                trendIcon.setAttribute('class', 'w-5 h-5 text-red-400');
             }
 
             // Stats
@@ -634,6 +787,7 @@
                 if (historyRes.ok) {
                     historyData = await historyRes.json();
                     renderChart();
+                    renderPositionChanges();
                 }
             } catch (err) {
                 console.error('Error fetching data:', err);

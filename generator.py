@@ -553,17 +553,20 @@ def git_push_data():
             cwd=str(BASE_DIR), check=True, capture_output=True
         )
 
-        # Push
-        subprocess.run(
-            ["git", "push"],
-            cwd=str(BASE_DIR), check=True, capture_output=True
+        # Push (explicit origin/branch avoids failure if tracking not configured)
+        result = subprocess.run(
+            ["git", "push", "origin", "main"],
+            cwd=str(BASE_DIR), capture_output=True
         )
-        logger.info("Git: data pushed to GitHub")
+        if result.returncode == 0:
+            logger.info("Git: data pushed to GitHub")
+        else:
+            logger.error(f"Git push FAILED (data not live): {result.stderr.decode().strip()}")
 
     except subprocess.CalledProcessError as e:
-        logger.warning(f"Git push failed (non-fatal): {e}")
+        logger.error(f"Git push FAILED (data not live): {e}")
     except Exception as e:
-        logger.warning(f"Git push error (non-fatal): {e}")
+        logger.error(f"Git push error (data not live): {e}")
 
 
 # ============================================================================

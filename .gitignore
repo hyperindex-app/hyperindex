@@ -24,8 +24,11 @@ venv/
 *secret*
 *credential*
 
-# Wallet cohort (private - never commit)
+# Wallet cohort and per-wallet data (private - NEVER commit)
+# Wallet addresses are the core IP of this product. Exposing them
+# lets anyone replicate the index and front-run the cohort.
 config/wallets.txt
+data/snapshots/
 
 # macOS
 .DS_Store

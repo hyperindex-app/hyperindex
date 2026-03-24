@@ -276,7 +276,21 @@
         let mainChart = null;
         let currentChartType = 'net';
 
-        // No filtering needed — show all hourly data points
+        // Sample to ~4x daily for chart smoothness, always include latest point
+        function sampleHistory(hourlyData) {
+            if (!hourlyData || hourlyData.length === 0) return hourlyData;
+            const SCHEDULE_HOURS = [0, 6, 12, 18];
+            const lastPoint = hourlyData[hourlyData.length - 1];
+            const filtered = hourlyData.filter(d => {
+                const dt = new Date(d.timestamp);
+                return SCHEDULE_HOURS.includes(dt.getHours());
+            });
+            const lastFiltered = filtered[filtered.length - 1];
+            if (!lastFiltered || lastFiltered.timestamp !== lastPoint.timestamp) {
+                filtered.push(lastPoint);
+            }
+            return filtered;
+        }
 
         // Helpers
         const fmt = (n) => {
@@ -320,7 +334,7 @@
         function renderChart() {
             if (!historyData || !historyData.hourly) return;
 
-            const hourly = historyData.hourly.slice(-720); // ~30 days at 24 points/day
+            const hourly = sampleHistory(historyData.hourly).slice(-120); // ~30 days at 4x daily
             const labels = hourly.map(d => {
                 const dt = new Date(d.timestamp);
                 return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });

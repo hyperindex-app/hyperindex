@@ -398,8 +398,11 @@ def build_index(wallets):
             "hype_conv": hype_data["conv_equity"] if hype_data else 0,
         },
         # Per-wallet per-asset positions for daily snapshots (not written to index_latest)
+        # NOTE: Wallet addresses are NEVER exposed in public output.
+        # Snapshots are local-only (data/snapshots/ is in .gitignore).
         "_wallet_snapshots": [
             {
+                "idx": i,
                 "addr": addr,
                 "equity": round(wallet_equity.get(addr, 0), 2),
                 "net_notional": round(wallet_long_total[addr] - wallet_short_total[addr], 2),
@@ -408,7 +411,7 @@ def build_index(wallets):
                     for coin, net_val in wallet_net[addr].items()
                 },
             }
-            for addr in wallets
+            for i, addr in enumerate(wallets)
             if addr in wallet_equity
         ],
     }

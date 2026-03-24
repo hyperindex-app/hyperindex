@@ -332,6 +332,7 @@
             const chartOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
+                elements: { point: { radius: 0 } },
                 interaction: { intersect: false, mode: 'index' },
                 plugins: {
                     legend: { labels: { color: '#64748b', font: { family: 'monospace', size: 11 }, filter: item => item.text !== '' } },

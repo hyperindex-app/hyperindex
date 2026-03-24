@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-HyperIndex Scheduler - Reliable 4x daily updates
+HyperIndex Scheduler - Hourly updates
 
-Runs as a persistent daemon and triggers generator.py at scheduled times.
+Runs as a persistent daemon and triggers generator.py every hour on the hour.
 More reliable than LaunchAgent StartCalendarInterval.
 
 Usage:
@@ -22,7 +22,7 @@ LOG_FILE = BASE_DIR / "logs" / "scheduler.log"
 GENERATOR_SCRIPT = BASE_DIR / "generator.py"
 LOCK_FILE = BASE_DIR / "scheduler.lock"
 
-SCHEDULE_HOURS = [0, 6, 12, 18]  # 12am, 6am, 12pm, 6pm
+SCHEDULE_HOURS = list(range(24))  # Every hour on the hour
 CHECK_INTERVAL = 60  # Check every 60 seconds
 
 # Track last run to avoid double-runs

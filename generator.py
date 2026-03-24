@@ -570,9 +570,15 @@ def write_health_status(success, wallets_total, wallets_failed, index_score):
 # ============================================================================
 
 def git_push_data():
-    """Commit updated data files and push to GitHub for static hosting."""
+    """Commit updated data files and push to GitHub for static hosting.
+
+    SECURITY: Only index_latest.json and history.json are staged.
+    NEVER add config/wallets.txt, data/snapshots/, or any file containing
+    wallet addresses. These are the core IP of the product — exposing them
+    lets anyone replicate the index and front-run the cohort.
+    """
     try:
-        # Stage only the data files
+        # Stage ONLY the public data files — never wallet addresses or snapshots
         subprocess.run(
             ["git", "add", "data/index_latest.json", "data/history.json"],
             cwd=str(BASE_DIR), check=True, capture_output=True

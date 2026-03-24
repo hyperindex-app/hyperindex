@@ -147,6 +147,30 @@
             </div>
         </div>
 
+        <!-- Elite Trader Distribution -->
+        <div class="bg-white/[0.03] rounded-xl p-4 sm:p-6 border border-white/[0.06]">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                <div>
+                    <h2 class="text-base font-semibold mb-0.5">Elite Trader Distribution</h2>
+                    <p class="text-xs text-slate-500" id="distributionSubtitle">Per-wallet net notional — sorted by absolute size</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div id="distributionLegend" class="flex items-center space-x-3 text-[11px] font-mono text-slate-500">
+                        <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block"></span><span>Long</span></span>
+                        <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-sm bg-red-500 inline-block"></span><span>Short</span></span>
+                    </div>
+                    <div class="flex bg-white/[0.03] rounded-lg p-1">
+                        <button onclick="setDistTab('position')" id="btn-dist-position" class="px-3 py-1.5 rounded-md text-xs font-medium bg-blue-600 text-white whitespace-nowrap transition-colors">Position</button>
+                        <button onclick="setDistTab('equity')" id="btn-dist-equity" class="px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-300 whitespace-nowrap transition-colors">Equity</button>
+                    </div>
+                    <button onclick="toggleDistLog()" id="btn-dist-log" class="px-2.5 py-1.5 rounded-md text-[11px] font-mono font-medium text-slate-500 hover:text-slate-300 bg-white/[0.03] border border-white/[0.06] whitespace-nowrap transition-colors">Log</button>
+                </div>
+            </div>
+            <div style="height: 280px;">
+                <canvas id="distributionChart"></canvas>
+            </div>
+        </div>
+
         <!-- Asset Table -->
         <div class="bg-white/[0.03] rounded-xl p-4 sm:p-6 border border-white/[0.06]">
             <div class="flex items-center justify-between mb-4">
@@ -440,6 +464,164 @@
                 type: 'line',
                 data: { labels: sampledLabels, datasets },
                 options: chartOptions
+            });
+        }
+
+        // Render Elite Trader distribution histogram
+        let distributionChart = null;
+        let currentDistTab = 'position';
+        let distLogScale = false;
+
+        function toggleDistLog() {
+            distLogScale = !distLogScale;
+            const btn = document.getElementById('btn-dist-log');
+            if (distLogScale) {
+                btn.classList.add('bg-blue-600', 'text-white');
+                btn.classList.remove('text-slate-500');
+            } else {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('text-slate-500');
+            }
+            renderDistribution();
+        }
+
+        function setDistTab(tab) {
+            currentDistTab = tab;
+            ['position', 'equity'].forEach(t => {
+                const btn = document.getElementById(`btn-dist-${t}`);
+                if (t === tab) {
+                    btn.classList.add('bg-blue-600', 'text-white');
+                    btn.classList.remove('text-slate-500');
+                } else {
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                    btn.classList.add('text-slate-500');
+                }
+            });
+            const subtitle = document.getElementById('distributionSubtitle');
+            const legend = document.getElementById('distributionLegend');
+            if (tab === 'equity') {
+                subtitle.textContent = 'Per-wallet account equity — same wallet order as Position tab';
+                legend.classList.add('hidden');
+            } else {
+                subtitle.textContent = 'Per-wallet net notional — sorted by absolute size';
+                legend.classList.remove('hidden');
+            }
+            renderDistribution();
+        }
+
+        // Signed log transform: preserves sign, compresses magnitude
+        // sign(v) * log10(1 + |v|) where v is in $M
+        function signedLog(v) { return Math.sign(v) * Math.log10(1 + Math.abs(v)); }
+        function signedLogInv(v) { return Math.sign(v) * (Math.pow(10, Math.abs(v)) - 1); }
+
+        function renderDistribution() {
+            if (!indexData || !indexData.wallet_distribution) return;
+            const wallets = indexData.wallet_distribution;
+            const labels = wallets.map((_, i) => i + 1);
+            const useLog = distLogScale && currentDistTab === 'position';
+
+            let values, colors, tooltipCb, yCallback, yScaleType;
+
+            if (currentDistTab === 'equity') {
+                values = wallets.map(w => w.equity / 1e6);
+                colors = 'rgba(139, 92, 246, 0.8)';
+                tooltipCb = {
+                    title: (items) => `Wallet #${items[0].label}`,
+                    label: (item) => {
+                        const w = wallets[item.dataIndex];
+                        return `Equity: ${fmt(w.equity)}`;
+                    }
+                };
+            } else {
+                const rawM = wallets.map(w => w.net_notional / 1e6);
+                values = useLog ? rawM.map(signedLog) : rawM;
+                colors = wallets.map(w => w.net_notional >= 0 ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)');
+                tooltipCb = {
+                    title: (items) => `Wallet #${items[0].label}`,
+                    label: (item) => {
+                        const w = wallets[item.dataIndex];
+                        const lines = [`Net: ${fmt(w.net_notional)}`];
+                        if (w.long_notional > 0) lines.push(`Long: ${fmt(w.long_notional)}`);
+                        if (w.short_notional > 0) lines.push(`Short: ${fmt(w.short_notional)}`);
+                        return lines;
+                    }
+                };
+            }
+
+            // Log scale: fixed ticks at clean round $M values, evenly spaced in log space
+            const logTicksM = [200, 100, 25, 10, 5, 0, -5, -10, -25, -100];
+            const logTickValues = logTicksM.map(signedLog);
+
+            const fmtLogTick = (real) => {
+                if (real === 0) return '$0';
+                const a = Math.abs(real);
+                const sign = real < 0 ? '-' : '';
+                if (a >= 1000) return `${sign}$${(a/1000).toFixed(0)}B`;
+                return `${sign}$${a}M`;
+            };
+
+            yCallback = useLog
+                ? (v) => {
+                    // Only label our explicit ticks
+                    const idx = logTickValues.findIndex(tv => Math.abs(tv - v) < 0.001);
+                    if (idx === -1) return '';
+                    return fmtLogTick(logTicksM[idx]);
+                }
+                : (v) => {
+                    if (Math.abs(v) >= 1000) return `$${(v/1000).toFixed(0)}B`;
+                    return `$${v.toFixed(0)}M`;
+                };
+
+            if (distributionChart) distributionChart.destroy();
+            const ctx = document.getElementById('distributionChart').getContext('2d');
+            distributionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 0,
+                        borderRadius: 1,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0d1117',
+                            borderColor: '#1e293b',
+                            borderWidth: 1,
+                            titleColor: '#e2e8f0',
+                            bodyColor: '#94a3b8',
+                            titleFont: { family: 'monospace' },
+                            bodyFont: { family: 'monospace' },
+                            callbacks: tooltipCb
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#475569', maxTicksLimit: 10, font: { family: 'monospace', size: 10 }, callback: (v) => v + 1 },
+                            grid: { display: false },
+                            title: { display: true, text: 'Wallets (by position size)', color: '#475569', font: { family: 'monospace', size: 10 } }
+                        },
+                        y: {
+                            type: 'linear',
+                            ...(useLog ? {
+                                min: signedLog(-100),
+                                max: signedLog(200),
+                                afterBuildTicks: (axis) => {
+                                    axis.ticks = logTickValues.map(v => ({ value: v }));
+                                }
+                            } : {}),
+                            ticks: { color: '#475569', font: { family: 'monospace', size: 10 }, callback: yCallback },
+                            grid: { color: 'rgba(255,255,255,0.03)' }
+                        }
+                    }
+                }
             });
         }
 
@@ -766,6 +948,7 @@
             }
 
             // Render components
+            renderDistribution();
             renderAssetTable();
             renderSignals();
         }

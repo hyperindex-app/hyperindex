@@ -57,7 +57,7 @@ RETRY_ATTEMPTS = 3
 RETRY_BACKOFF = 1.0
 
 # Cohort rebalance date - update this when wallets.txt is updated
-COHORT_REBALANCED_AT = "2026-02-18"
+COHORT_REBALANCED_AT = "2026-03-24"
 
 # ============================================================================
 # LOGGING SETUP
@@ -370,6 +370,22 @@ def build_index(wallets):
             "L_cohort_total": round(L_cohort_total, 4),
         },
         "assets": assets,
+        # Per-wallet data for distribution histogram (no addresses exposed)
+        # Sorted by abs net notional descending — same order used for all tabs
+        "wallet_distribution": sorted(
+            [
+                {
+                    "net_notional": round(wallet_long_total[addr] - wallet_short_total[addr], 2),
+                    "long_notional": round(wallet_long_total[addr], 2),
+                    "short_notional": round(wallet_short_total[addr], 2),
+                    "equity": round(wallet_equity.get(addr, 0), 2),
+                }
+                for addr in wallets
+                if addr in wallet_equity
+            ],
+            key=lambda w: abs(w["net_notional"]),
+            reverse=True,
+        ),
         # Include key metrics for history tracking
         "_history_data": {
             "btc_net_usd": btc_data["net_usd"] if btc_data else 0,

@@ -28,7 +28,7 @@ HEALTH_FILE = DATA_DIR / ".health"
 INDEX_FILE = DATA_DIR / "index_latest.json"
 
 # Schedule times (hours in 24h format)
-SCHEDULE_HOURS = [0, 6, 12, 18]  # 12am, 6am, 12pm, 6pm
+SCHEDULE_HOURS = list(range(24))  # Every hour on the hour
 
 # Display settings
 REFRESH_INTERVAL = 30  # seconds

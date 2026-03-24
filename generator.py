@@ -392,7 +392,25 @@ def build_index(wallets):
             "eth_net_usd": eth_data["net_usd"] if eth_data else 0,
             "sol_net_usd": sol_data["net_usd"] if sol_data else 0,
             "hype_net_usd": hype_data["net_usd"] if hype_data else 0,
-        }
+            "btc_conv": btc_data["conv_equity"] if btc_data else 0,
+            "eth_conv": eth_data["conv_equity"] if eth_data else 0,
+            "sol_conv": sol_data["conv_equity"] if sol_data else 0,
+            "hype_conv": hype_data["conv_equity"] if hype_data else 0,
+        },
+        # Per-wallet per-asset positions for daily snapshots (not written to index_latest)
+        "_wallet_snapshots": [
+            {
+                "addr": addr,
+                "equity": round(wallet_equity.get(addr, 0), 2),
+                "net_notional": round(wallet_long_total[addr] - wallet_short_total[addr], 2),
+                "positions": {
+                    coin: round(net_val, 2)
+                    for coin, net_val in wallet_net[addr].items()
+                },
+            }
+            for addr in wallets
+            if addr in wallet_equity
+        ],
     }
 
     return output
@@ -431,6 +449,10 @@ def update_history(index_data):
         "eth_net_usd": hist_data.get("eth_net_usd", 0),
         "sol_net_usd": hist_data.get("sol_net_usd", 0),
         "hype_net_usd": hist_data.get("hype_net_usd", 0),
+        "btc_conv": hist_data.get("btc_conv", 0),
+        "eth_conv": hist_data.get("eth_conv", 0),
+        "sol_conv": hist_data.get("sol_conv", 0),
+        "hype_conv": hist_data.get("hype_conv", 0),
         "index_score": index_data["index_score"],
     }
 
@@ -616,8 +638,8 @@ def generate():
     # Backup existing
     backup_existing(INDEX_PATH, BACKUP_DIR)
 
-    # Remove internal history data before saving index
-    index_output = {k: v for k, v in data.items() if k != "_history_data"}
+    # Remove internal data before saving index
+    index_output = {k: v for k, v in data.items() if not k.startswith("_")}
 
     # Write index
     atomic_write_json(index_output, INDEX_PATH)
@@ -627,6 +649,23 @@ def generate():
     history = update_history(data)
     atomic_write_json(history, HISTORY_PATH)
     logger.info(f"Updated history: {len(history.get('hourly', []))} points")
+
+    # Daily wallet snapshot (midnight run only — for future V2 micro-rebalance)
+    now = datetime.now()
+    snapshot_dir = DATA_DIR / "snapshots"
+    snapshot_file = snapshot_dir / f"{now.strftime('%Y-%m-%d')}.json"
+    if not snapshot_file.exists() and "_wallet_snapshots" in data:
+        try:
+            snapshot_dir.mkdir(parents=True, exist_ok=True)
+            snapshot_data = {
+                "timestamp": data["generated_at"],
+                "cohort_stats": data["cohort_stats"],
+                "wallets": data["_wallet_snapshots"],
+            }
+            atomic_write_json(snapshot_data, snapshot_file)
+            logger.info(f"Daily snapshot written: {snapshot_file.name}")
+        except Exception as e:
+            logger.warning(f"Failed to write daily snapshot: {e}")
 
     # Write health status
     write_health_status(

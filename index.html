@@ -277,14 +277,34 @@
         let currentChartType = 'net';
 
         // Sample to ~4x daily for chart smoothness, always include latest point
+        // Buckets each point into nearest 6h slot and keeps latest per bucket
         function sampleHistory(hourlyData) {
             if (!hourlyData || hourlyData.length === 0) return hourlyData;
-            const SCHEDULE_HOURS = [0, 6, 12, 18];
+            const SLOTS = [0, 6, 12, 18];
             const lastPoint = hourlyData[hourlyData.length - 1];
-            const filtered = hourlyData.filter(d => {
+            // Assign each point to nearest 6h slot, keep latest per slot
+            const buckets = {};
+            hourlyData.forEach(d => {
                 const dt = new Date(d.timestamp);
-                return SCHEDULE_HOURS.includes(dt.getHours());
+                const h = dt.getHours() + dt.getMinutes() / 60;
+                // Find nearest slot (with wrap: 21+ maps to 0 next day)
+                let bestSlot = 0, bestDist = 99;
+                SLOTS.forEach(s => {
+                    const dist = Math.min(Math.abs(h - s), Math.abs(h - s - 24), Math.abs(h - s + 24));
+                    if (dist < bestDist) { bestDist = dist; bestSlot = s; }
+                });
+                const dayKey = dt.toISOString().slice(0, 10);
+                // If closer to slot 0 and hour >= 21, it's next day's slot 0
+                const bucketDay = (bestSlot === 0 && h >= 21) ?
+                    new Date(dt.getTime() + 86400000).toISOString().slice(0, 10) : dayKey;
+                const key = bucketDay + 'T' + String(bestSlot).padStart(2, '0');
+                // Keep latest point per bucket
+                if (!buckets[key] || d.timestamp > buckets[key].timestamp) {
+                    buckets[key] = d;
+                }
             });
+            const filtered = Object.keys(buckets).sort().map(k => buckets[k]);
+            // Always include the very latest point
             const lastFiltered = filtered[filtered.length - 1];
             if (!lastFiltered || lastFiltered.timestamp !== lastPoint.timestamp) {
                 filtered.push(lastPoint);

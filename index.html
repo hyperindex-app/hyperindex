@@ -293,10 +293,12 @@
                     const dist = Math.min(Math.abs(h - s), Math.abs(h - s - 24), Math.abs(h - s + 24));
                     if (dist < bestDist) { bestDist = dist; bestSlot = s; }
                 });
-                const dayKey = dt.toISOString().slice(0, 10);
+                // Use LOCAL date (not UTC) to match getHours() which returns local time
+                const dayKey = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
                 // If closer to slot 0 and hour >= 21, it's next day's slot 0
+                const nextDay = new Date(dt.getTime() + 86400000);
                 const bucketDay = (bestSlot === 0 && h >= 21) ?
-                    new Date(dt.getTime() + 86400000).toISOString().slice(0, 10) : dayKey;
+                    `${nextDay.getFullYear()}-${String(nextDay.getMonth()+1).padStart(2,'0')}-${String(nextDay.getDate()).padStart(2,'0')}` : dayKey;
                 const key = bucketDay + 'T' + String(bestSlot).padStart(2, '0');
                 // Keep latest point per bucket
                 if (!buckets[key] || d.timestamp > buckets[key].timestamp) {
@@ -395,7 +397,7 @@
                         borderColor: '#10b981',
                         fill: { target: { value: 0 }, above: 'rgba(16, 185, 129, 0.08)', below: 'transparent' },
                         segment: { borderColor: ctx => ctx.p1.parsed.y < 0 ? '#ef4444' : '#10b981' },
-                        tension: 0.3,
+                        tension: 0,
                         pointRadius: 0,
                         borderWidth: 1.5,
                     },
@@ -404,7 +406,7 @@
                         data: netValues,
                         borderColor: 'transparent',
                         fill: { target: { value: 0 }, above: 'transparent', below: 'rgba(239, 68, 68, 0.08)' },
-                        tension: 0.3,
+                        tension: 0,
                         pointRadius: 0,
                         tooltip: { enabled: false },
                     }
@@ -416,7 +418,7 @@
                     borderColor: '#eab308',
                     backgroundColor: 'rgba(234, 179, 8, 0.06)',
                     fill: true,
-                    tension: 0.3,
+                    tension: 0,
                     borderWidth: 1.5,
                 }];
             } else if (currentChartType === 'longshort') {
@@ -427,7 +429,7 @@
                         borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.06)',
                         fill: true,
-                        tension: 0.3,
+                        tension: 0,
                         borderWidth: 1.5,
                     },
                     {
@@ -436,16 +438,16 @@
                         borderColor: '#ef4444',
                         backgroundColor: 'rgba(239, 68, 68, 0.06)',
                         fill: true,
-                        tension: 0.3,
+                        tension: 0,
                         borderWidth: 1.5,
                     }
                 ];
             } else if (currentChartType === 'assets') {
                 datasets = [
-                    { label: 'BTC Net ($M)', data: hourly.map(d => (d.btc_net_usd / 1e6).toFixed(1)), borderColor: '#f7931a', tension: 0.3, borderWidth: 1.5 },
-                    { label: 'ETH Net ($M)', data: hourly.map(d => (d.eth_net_usd / 1e6).toFixed(1)), borderColor: '#627eea', tension: 0.3, borderWidth: 1.5 },
-                    { label: 'SOL Net ($M)', data: hourly.map(d => (d.sol_net_usd / 1e6).toFixed(1)), borderColor: '#a855f7', tension: 0.3, borderWidth: 1.5 },
-                    { label: 'HYPE Net ($M)', data: hourly.map(d => (d.hype_net_usd / 1e6).toFixed(1)), borderColor: '#22d3ee', tension: 0.3, borderWidth: 1.5 }
+                    { label: 'BTC Net ($M)', data: hourly.map(d => (d.btc_net_usd / 1e6).toFixed(1)), borderColor: '#f7931a', tension: 0, borderWidth: 1.5 },
+                    { label: 'ETH Net ($M)', data: hourly.map(d => (d.eth_net_usd / 1e6).toFixed(1)), borderColor: '#627eea', tension: 0, borderWidth: 1.5 },
+                    { label: 'SOL Net ($M)', data: hourly.map(d => (d.sol_net_usd / 1e6).toFixed(1)), borderColor: '#a855f7', tension: 0, borderWidth: 1.5 },
+                    { label: 'HYPE Net ($M)', data: hourly.map(d => (d.hype_net_usd / 1e6).toFixed(1)), borderColor: '#22d3ee', tension: 0, borderWidth: 1.5 }
                 ];
             } else if (currentChartType === 'equity') {
                 datasets = [{
@@ -454,7 +456,7 @@
                     borderColor: '#8b5cf6',
                     backgroundColor: 'rgba(139, 92, 246, 0.06)',
                     fill: true,
-                    tension: 0.3,
+                    tension: 0,
                     borderWidth: 1.5,
                 }];
             } else if (currentChartType === 'leverage') {
@@ -464,7 +466,7 @@
                     borderColor: '#3b82f6',
                     backgroundColor: 'rgba(59, 130, 246, 0.06)',
                     fill: true,
-                    tension: 0.3,
+                    tension: 0,
                     borderWidth: 1.5,
                 }];
                 chartOptions.scales.y.ticks.callback = (v) => parseFloat(v).toFixed(1) + 'x';

@@ -57,7 +57,7 @@ RETRY_ATTEMPTS = 3
 RETRY_BACKOFF = 1.0
 
 # Cohort rebalance date - update this when wallets.txt is updated
-COHORT_REBALANCED_AT = "2026-03-24"
+COHORT_REBALANCED_AT = "2026-04-03"
 
 # ============================================================================
 # LOGGING SETUP

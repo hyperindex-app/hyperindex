@@ -37,10 +37,10 @@ HyperIndex/
 ├── monitor.py              # Terminal monitor
 ├── config/
 │   └── wallets.txt         # Cohort wallet addresses (gitignored, not in repo)
-├── data/                   # Generated data (gitignored)
-│   ├── index_latest.json
-│   ├── history.json
-│   └── backups/
+├── data/                   # Generated data
+│   ├── index_latest.json   # Committed (serves GitHub Pages)
+│   ├── history.json        # Committed (serves GitHub Pages)
+│   └── backups/            # Gitignored
 ├── images/
 │   ├── logo-icon.jpg
 │   └── logo-wordmark.jpg

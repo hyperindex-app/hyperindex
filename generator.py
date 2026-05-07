@@ -56,8 +56,17 @@ MAX_HISTORY_POINTS = 2000  # Keep ~2 weeks at 15-min intervals
 RETRY_ATTEMPTS = 3
 RETRY_BACKOFF = 1.0
 
-# Cohort rebalance date - update this when wallets.txt is updated
-COHORT_REBALANCED_AT = "2026-04-27"
+# Cohort rebalance date - auto-derived from wallets.txt mtime.
+# The rebalance pipeline overwrites wallets.txt on each weekly rebalance,
+# so the file's modification time is the canonical "last rebalanced" timestamp.
+def get_cohort_rebalanced_at() -> str:
+    """Return the date wallets.txt was last modified, as YYYY-MM-DD."""
+    try:
+        mtime = WALLETS_FILE.stat().st_mtime
+        return datetime.fromtimestamp(mtime).strftime("%Y-%m-%d")
+    except OSError:
+        # Fallback if wallets.txt is missing for any reason
+        return datetime.now().strftime("%Y-%m-%d")
 
 # ============================================================================
 # LOGGING SETUP
@@ -356,7 +365,7 @@ def build_index(wallets):
 
     output = {
         "generated_at": datetime.now().isoformat(),
-        "cohort_rebalanced_at": COHORT_REBALANCED_AT,
+        "cohort_rebalanced_at": get_cohort_rebalanced_at(),
         "index_score": round(index_score, 6),
         "leverage_dampening": False,
         "cohort_stats": {
